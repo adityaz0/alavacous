@@ -289,14 +289,7 @@ export async function createApplication(data) {
   const projectRef = doc(db, "projects", data.projectId);
 
   await runTransaction(db, async (transaction) => {
-    const [applicationSnapshot, projectSnapshot] = await Promise.all([
-      transaction.get(applicationRef),
-      transaction.get(projectRef),
-    ]);
-
-    if (applicationSnapshot.exists()) {
-      throw new Error("You already applied to this project.");
-    }
+    const projectSnapshot = await transaction.get(projectRef);
 
     if (!projectSnapshot.exists()) {
       throw new Error("This project no longer exists.");

@@ -36,10 +36,6 @@ function isPermissionDenied(error) {
   return error?.code === "permission-denied";
 }
 
-function isPermissionMessage(message = "") {
-  return message.toLowerCase().includes("permission");
-}
-
 export default function ProjectDetailPage() {
   const { projectId } = useParams();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -180,6 +176,7 @@ export default function ProjectDetailPage() {
       setMessage("");
       toast.success("Application submitted. The project owner can now review it.");
     } catch (err) {
+      console.error("Apply submit failed:", err);
       setSubmitError(getServiceErrorMessage(err, "Could not submit application."));
     } finally {
       setSubmitting(false);
@@ -403,7 +400,7 @@ export default function ProjectDetailPage() {
               </Button>
             ) : (
               <form className="mt-4 grid gap-3" onSubmit={handleApply}>
-                {submitError && !isPermissionMessage(submitError) ? (
+                {submitError ? (
                   <Alert variant="error">
                     {submitError}
                   </Alert>
