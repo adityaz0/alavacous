@@ -53,6 +53,7 @@ export default function ProjectDetailPage() {
 
   const isOwner = useMemo(() => user && project?.ownerId === user.uid, [project, user]);
   const canApply = project?.status === "Open" && isAuthenticated && !isOwner && !myApplication;
+  const canViewTeamWorkspace = isOwner || myApplication?.status === "Accepted";
 
   useEffect(() => {
     if (authLoading) return undefined;
@@ -253,7 +254,7 @@ export default function ProjectDetailPage() {
         Back to projects
       </Link>
 
-      <div className="grid gap-6 lg:block lg:pr-[400px] xl:pr-[440px]">
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="grid gap-6">
           <article className="panel-soft glass-reflect overflow-hidden p-5 sm:p-7">
             <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
@@ -304,15 +305,9 @@ export default function ProjectDetailPage() {
               <DetailStat icon={CalendarDays} label="Posted" value={formatDate(project.createdAt)} />
             </div>
           </article>
-
-          <TeamSection
-            applications={applications}
-            project={project}
-            visible={isOwner || myApplication?.status === "Accepted"}
-          />
         </section>
 
-        <aside className="grid content-start gap-6 lg:fixed lg:right-8 lg:top-[145px] lg:z-30 lg:w-[380px] xl:right-[max(2rem,calc((100vw-80rem)/2+2rem))] xl:w-[420px]">
+        <aside className="grid content-start gap-6 lg:sticky lg:top-[145px] lg:self-start">
           <section className="panel p-5">
             <h2 className="font-semibold text-white">{isOwner ? "Owner controls" : "Application"}</h2>
             <p className="mt-1 text-sm leading-6 text-white/44">
@@ -399,7 +394,13 @@ export default function ProjectDetailPage() {
             )}
           </section>
         </aside>
-      </div>
+      </section>
+
+      {canViewTeamWorkspace ? (
+        <section className="mt-6">
+          <TeamSection applications={applications} project={project} visible />
+        </section>
+      ) : null}
 
       {isOwner ? (
         <section className="mt-8">
