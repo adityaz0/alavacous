@@ -4,19 +4,19 @@ import { Link } from "react-router-dom";
 import Field from "../components/forms/Field.jsx";
 import Alert from "../components/ui/Alert.jsx";
 import Button from "../components/ui/Button.jsx";
+import { useToast } from "../components/ui/ToastProvider.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getAuthErrorMessage, isValidEmail } from "../utils/messages.js";
 
 export default function ForgotPasswordPage() {
   const { resetPassword, firebaseConfigured } = useAuth();
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const toast = useToast();
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setMessage("");
     setError("");
 
     if (!firebaseConfigured) {
@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
 
     try {
       await resetPassword(email.trim());
-      setMessage("Password reset email sent. Check your inbox.");
+      toast.success("Password reset email sent. Check your inbox.");
     } catch (err) {
       setError(getAuthErrorMessage(err));
     } finally {
@@ -64,11 +64,6 @@ export default function ForgotPasswordPage() {
           </Alert>
         ) : null}
 
-        {message ? (
-          <Alert variant="success" className="mt-5">
-            {message}
-          </Alert>
-        ) : null}
         {error ? (
           <Alert variant="error" className="mt-5">
             {error}

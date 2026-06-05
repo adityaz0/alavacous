@@ -1,5 +1,6 @@
-import { CalendarDays, Check, Mail, MessageSquare, X } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Check, Mail, MessageSquare, X } from "lucide-react";
 import { useState } from "react";
+import { getProjectChatId } from "../../services/firestore.js";
 import { formatDate } from "../../utils/format.js";
 import { getServiceErrorMessage } from "../../utils/messages.js";
 import Alert from "../ui/Alert.jsx";
@@ -7,28 +8,37 @@ import Avatar from "../ui/Avatar.jsx";
 import Button from "../ui/Button.jsx";
 import EmptyState from "../ui/EmptyState.jsx";
 import StatusBadge from "../ui/StatusBadge.jsx";
-import Toast from "../ui/Toast.jsx";
+import { useToast } from "../ui/ToastProvider.jsx";
 
-export default function ApplicationList({ applications, ownerView = false, onStatusChange }) {
+export default function ApplicationList({
+  applications,
+  ownerView = false,
+  onStatusChange,
+  emptyTitle,
+  emptyDescription,
+  emptyActionLabel,
+  emptyActionTo,
+}) {
   const [updatingId, setUpdatingId] = useState("");
-  const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const toast = useToast();
 
   async function handleStatusClick(application, status) {
     if (!onStatusChange) {
-      setError("Application review is not available right now.");
+      toast.error("Application review is not available right now.");
       return;
     }
 
     setUpdatingId(application.id);
-    setNotice("");
     setError("");
 
     try {
       await onStatusChange(application.id, status);
-      setNotice(`${application.applicantName || "Application"} ${status.toLowerCase()}.`);
+      toast.success(`${application.applicantName || "Application"} ${status.toLowerCase()}.`);
     } catch (err) {
-      setError(getServiceErrorMessage(err, "Could not update application status."));
+      const message = getServiceErrorMessage(err, "Could not update application status.");
+      setError(message);
+      toast.error(message);
     } finally {
       setUpdatingId("");
     }
@@ -37,21 +47,21 @@ export default function ApplicationList({ applications, ownerView = false, onSta
   if (!applications?.length) {
     return (
       <EmptyState
-        title={ownerView ? "No applicants yet" : "No applications sent"}
+        title={emptyTitle || (ownerView ? "No applicants yet" : "No applications sent")}
         description={
-          ownerView
+          emptyDescription ||
+          (ownerView
             ? "When builders apply to your projects, their profiles and messages will show up here."
-            : "Explore open projects and apply to teams that fit your skills."
+            : "Explore open projects and apply to teams that fit your skills.")
         }
-        actionLabel={ownerView ? undefined : "Browse Projects"}
-        actionTo={ownerView ? undefined : "/projects"}
+        actionLabel={emptyActionLabel ?? (ownerView ? undefined : "Browse Projects")}
+        actionTo={emptyActionTo ?? (ownerView ? undefined : "/projects")}
       />
     );
   }
 
   return (
     <div className="grid gap-3">
-      <Toast variant="success">{notice}</Toast>
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       {applications.map((application) => (
@@ -102,26 +112,38 @@ export default function ApplicationList({ applications, ownerView = false, onSta
               ) : null}
             </div>
 
-            {ownerView && application.status === "Pending" ? (
-              <div className="grid shrink-0 grid-cols-2 gap-2 lg:w-52 lg:grid-cols-1">
-                <Button
-                  variant="success"
-                  disabled={updatingId === application.id}
-                  onClick={() => handleStatusClick(application, "Accepted")}
-                >
-                  <Check size={16} />
-                  {updatingId === application.id ? "Updating..." : "Accept"}
+            <div className="grid shrink-0 gap-2 sm:grid-cols-3 lg:w-52 lg:grid-cols-1">
+              <Button as="link" to={`/projects/${application.projectId}`} variant="secondary">
+                <ArrowUpRight size={16} />
+                View Project
+              </Button>
+              {ownerView && application.status === "Pending" ? (
+                <>
+                  <Button
+                    variant="success"
+                    disabled={updatingId === application.id}
+                    onClick={() => handleStatusClick(application, "Accepted")}
+                  >
+                    <Check size={16} />
+                    {updatingId === application.id ? "Updating..." : "Accept"}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    disabled={updatingId === application.id}
+                    onClick={() => handleStatusClick(application, "Rejected")}
+                  >
+                    <X size={16} />
+                    {updatingId === application.id ? "Updating..." : "Reject"}
+                  </Button>
+                </>
+              ) : null}
+              {application.status === "Accepted" ? (
+                <Button as="link" to={`/chats/${application.chatId || getProjectChatId(application.projectId, application.applicantId)}`} variant="secondary">
+                  <MessageSquare size={16} />
+                  Open Chat
                 </Button>
-                <Button
-                  variant="danger"
-                  disabled={updatingId === application.id}
-                  onClick={() => handleStatusClick(application, "Rejected")}
-                >
-                  <X size={16} />
-                  {updatingId === application.id ? "Updating..." : "Reject"}
-                </Button>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
         </article>
       ))}

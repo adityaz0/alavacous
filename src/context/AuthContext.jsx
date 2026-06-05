@@ -1,5 +1,6 @@
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
   onAuthStateChanged,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -32,30 +33,47 @@ export function AuthProvider({ children }) {
       return undefined;
     }
 
-    return onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+    return onAuthStateChanged(
+      auth,
+      (currentUser) => {
+        setUser(currentUser);
+        setLoading(false);
+      },
+      () => {
+        setUser(null);
+        setLoading(false);
+      }
+    );
   }, []);
 
   async function signup({ name, email, password }) {
     requireFirebase();
     const credential = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(credential.user, { displayName: name });
-    await createUserProfile(credential.user.uid, {
-      uid: credential.user.uid,
-      fullName: name,
-      username: usernameFromEmail(email),
-      email,
-      bio: "",
-      skills: [],
-      experienceLevel: "Beginner",
-      location: "",
-      portfolioUrl: "",
-      githubUrl: "",
-      linkedinUrl: "",
-    });
-    return credential.user;
+
+    try {
+      await updateProfile(credential.user, { displayName: name });
+      await createUserProfile(credential.user.uid, {
+        uid: credential.user.uid,
+        fullName: name,
+        username: usernameFromEmail(email),
+        email,
+        bio: "",
+        skills: [],
+        experienceLevel: "Beginner",
+        location: "",
+        portfolioUrl: "",
+        githubUrl: "",
+        linkedinUrl: "",
+      });
+      return credential.user;
+    } catch (error) {
+      try {
+        await deleteUser(credential.user);
+      } catch {
+        await signOut(auth).catch(() => {});
+      }
+      throw error;
+    }
   }
 
   async function login(email, password) {

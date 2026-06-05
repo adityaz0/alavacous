@@ -1,17 +1,21 @@
-import { ArrowLeft, CalendarDays, ExternalLink, Layers, Send, UserCheck, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, Edit3, ExternalLink, Layers, LockKeyhole, Send, Trash2, UserCheck, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import ApplicationList from "../components/applications/ApplicationList.jsx";
+import TeamSection from "../components/projects/TeamSection.jsx";
 import Alert from "../components/ui/Alert.jsx";
 import Avatar from "../components/ui/Avatar.jsx";
 import Button from "../components/ui/Button.jsx";
+import ConfirmModal from "../components/ui/ConfirmModal.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
 import LoadingState from "../components/ui/LoadingState.jsx";
 import StatusBadge from "../components/ui/StatusBadge.jsx";
-import Toast from "../components/ui/Toast.jsx";
+import { useToast } from "../components/ui/ToastProvider.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import {
+  closeProject,
   createApplication,
+  deleteProjectWithApplications,
   getApplicationForProject,
   getProject,
   getUserProfile,
@@ -23,22 +27,34 @@ import { getServiceErrorMessage } from "../utils/messages.js";
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [project, setProject] = useState(null);
   const [applications, setApplications] = useState([]);
   const [myApplication, setMyApplication] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [error, setError] = useState("");
-  const location = useLocation();
   const navigate = useNavigate();
-  const [success, setSuccess] = useState(location.state?.notice || "");
+  const toast = useToast();
 
   const isOwner = useMemo(() => user && project?.ownerId === user.uid, [project, user]);
   const canApply = project?.status === "Open" && isAuthenticated && !isOwner && !myApplication;
 
   useEffect(() => {
+    if (authLoading) return undefined;
+
+    if (!isAuthenticated || !user) {
+      setProject(null);
+      setApplications([]);
+      setMyApplication(null);
+      setLoading(false);
+      return undefined;
+    }
+
     let mounted = true;
 
     async function loadProject() {
@@ -52,7 +68,7 @@ export default function ProjectDetailPage() {
           const existingApplication = await getApplicationForProject(data.id, user.uid);
           if (mounted) setMyApplication(existingApplication);
 
-          if (data.ownerId === user.uid) {
+          if (data.ownerId === user.uid || existingApplication?.status === "Accepted") {
             const applicants = await listApplicationsByProject(data.id);
             if (mounted) setApplications(applicants);
           }
@@ -68,7 +84,7 @@ export default function ProjectDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [projectId, user]);
+  }, [authLoading, isAuthenticated, projectId, user]);
 
   async function handleApply(event) {
     event.preventDefault();
@@ -80,7 +96,6 @@ export default function ProjectDetailPage() {
 
     setSubmitting(true);
     setError("");
-    setSuccess("");
 
     try {
       const cleanMessage = message.trim();
@@ -97,6 +112,8 @@ export default function ProjectDetailPage() {
         applicantId: user.uid,
         applicantName: profile?.fullName || user.displayName || user.email,
         applicantEmail: user.email,
+        applicantRole: profile?.experienceLevel || "Builder",
+        applicantSkills: profile?.skills || [],
         message: cleanMessage,
       });
       setMyApplication({ id: applicationId, status: "Pending", message: cleanMessage });
@@ -104,7 +121,7 @@ export default function ProjectDetailPage() {
         current ? { ...current, applicantCount: (current.applicantCount || 0) + 1 } : current
       );
       setMessage("");
-      setSuccess("Application submitted. The project owner can now review it.");
+      toast.success("Application submitted. The project owner can now review it.");
     } catch (err) {
       setError(getServiceErrorMessage(err, "Could not submit application."));
     } finally {
@@ -113,10 +130,56 @@ export default function ProjectDetailPage() {
   }
 
   async function handleStatusChange(applicationId, status) {
-    await updateApplicationStatus(applicationId, status);
+    const result = await updateApplicationStatus(applicationId, user.uid, status);
     setApplications((current) =>
-      current.map((application) => (application.id === applicationId ? { ...application, status } : application))
+      current.map((application) =>
+        application.id === applicationId ? { ...application, status, ...(result?.applicationPatch || {}) } : application
+      )
     );
+    return result;
+  }
+
+  async function handleCloseProject() {
+    if (!isOwner || !user) return;
+
+    if (project.status === "Closed") {
+      toast.info("This project is already closed.");
+      return;
+    }
+
+    setClosing(true);
+    setError("");
+
+    try {
+      await closeProject(project.id, user.uid);
+      setProject((current) => (current ? { ...current, status: "Closed" } : current));
+      toast.success("Project closed. Applications were preserved.");
+    } catch (err) {
+      const message = getServiceErrorMessage(err, "Could not close project.");
+      setError(message);
+      toast.error(message);
+    } finally {
+      setClosing(false);
+    }
+  }
+
+  async function handleDeleteProject() {
+    if (!isOwner || !user) return;
+
+    setDeleting(true);
+    setError("");
+
+    try {
+      await deleteProjectWithApplications(project.id, user.uid);
+      setDeleteModalOpen(false);
+      navigate("/projects", { state: { notice: "Project deleted." } });
+    } catch (err) {
+      const message = getServiceErrorMessage(err, "Could not delete project.");
+      setError(message);
+      toast.error(message);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   if (loading) {
@@ -133,8 +196,6 @@ export default function ProjectDetailPage() {
 
   return (
     <main className="page-shell page-reveal py-6 sm:py-10">
-      <Toast variant="success">{success}</Toast>
-
       <Link to="/projects" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-white/55 transition hover:text-white">
         <ArrowLeft size={16} />
         Back to projects
@@ -191,12 +252,20 @@ export default function ProjectDetailPage() {
               <DetailStat icon={CalendarDays} label="Posted" value={formatDate(project.createdAt)} />
             </div>
           </article>
+
+          <TeamSection
+            applications={applications}
+            project={project}
+            visible={isOwner || myApplication?.status === "Accepted"}
+          />
         </section>
 
         <aside className="grid content-start gap-6">
-          <section className="panel sticky top-24 p-5">
-            <h2 className="font-semibold text-white">Application</h2>
-            <p className="mt-1 text-sm leading-6 text-white/44">Apply with a short, focused note about your fit.</p>
+          <section className="panel p-5 xl:sticky xl:top-24">
+            <h2 className="font-semibold text-white">{isOwner ? "Owner controls" : "Application"}</h2>
+            <p className="mt-1 text-sm leading-6 text-white/44">
+              {isOwner ? "Manage this project lifecycle and applicant access." : "Apply with a short, focused note about your fit."}
+            </p>
 
             {error ? (
               <Alert variant="error" className="mt-4">
@@ -205,9 +274,33 @@ export default function ProjectDetailPage() {
             ) : null}
 
             {isOwner ? (
-              <div className="mt-4 rounded-lg border border-cyan/15 bg-cyan/10 p-4">
-                <p className="text-sm font-semibold text-cyan">You own this project</p>
-                <p className="mt-2 text-sm leading-6 text-white/54">Applicants are listed below with review actions.</p>
+              <div className="mt-4 grid gap-4">
+                <div className="rounded-lg border border-cyan/15 bg-cyan/10 p-4">
+                  <p className="text-sm font-semibold text-cyan">You own this project</p>
+                  <p className="mt-2 text-sm leading-6 text-white/54">
+                    Applicants are preserved when you close a project. Deleting removes the project and its applications.
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <Button as="link" to={`/projects/${project.id}/edit`} variant="secondary" className="w-full">
+                    <Edit3 size={16} />
+                    Edit Project
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={closing || project.status === "Closed"}
+                    onClick={handleCloseProject}
+                    className="w-full border-amber/30 bg-amber/10 text-amber hover:border-amber/45 hover:bg-amber/15"
+                  >
+                    <LockKeyhole size={16} />
+                    {closing ? "Closing..." : project.status === "Closed" ? "Project Closed" : "Close Project"}
+                  </Button>
+                  <Button variant="danger" disabled={deleting} onClick={() => setDeleteModalOpen(true)} className="w-full">
+                    <Trash2 size={16} />
+                    Delete Project
+                  </Button>
+                </div>
               </div>
             ) : myApplication ? (
               <div className="mt-4 rounded-lg border border-line bg-white/[0.045] p-4">
@@ -257,6 +350,16 @@ export default function ProjectDetailPage() {
           <ApplicationList applications={applications} ownerView onStatusChange={handleStatusChange} />
         </section>
       ) : null}
+
+      <ConfirmModal
+        open={isOwner && deleteModalOpen}
+        title="Delete project?"
+        description="This permanently deletes the project and all related applications. This cannot be undone."
+        confirmLabel="Delete Project"
+        submitting={deleting}
+        onCancel={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteProject}
+      />
     </main>
   );
 }

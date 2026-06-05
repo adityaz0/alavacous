@@ -20,6 +20,10 @@ const knownFriendlyMessages = new Set([
   "This project no longer exists.",
   "You cannot apply to your own project.",
   "Applications are closed for this project.",
+  "Only the project owner can manage this project.",
+  "Only the project owner can review applications.",
+  "Please choose a valid application status.",
+  "This application has already been reviewed.",
 ]);
 
 function getCode(error) {

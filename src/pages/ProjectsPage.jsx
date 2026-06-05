@@ -1,5 +1,7 @@
 import { Filter, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import SelectMenu from "../components/forms/SelectMenu.jsx";
+import { SkillFilterSelect } from "../components/forms/SkillInput.jsx";
 import ProjectCard from "../components/projects/ProjectCard.jsx";
 import Alert from "../components/ui/Alert.jsx";
 import Button from "../components/ui/Button.jsx";
@@ -11,7 +13,7 @@ import { projectTypes } from "../utils/constants.js";
 import { getServiceErrorMessage } from "../utils/messages.js";
 
 export default function ProjectsPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,9 +22,18 @@ export default function ProjectsPage() {
   const [skill, setSkill] = useState("");
 
   useEffect(() => {
+    if (authLoading) return undefined;
+
+    if (!isAuthenticated) {
+      setProjects([]);
+      setLoading(false);
+      return undefined;
+    }
+
     let mounted = true;
 
     async function loadProjects() {
+      setLoading(true);
       try {
         const data = await listProjects();
         if (mounted) setProjects(data);
@@ -37,13 +48,15 @@ export default function ProjectsPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authLoading, isAuthenticated]);
+
+  const activeProjects = useMemo(() => projects.filter((project) => project.status !== "Closed"), [projects]);
 
   const filteredProjects = useMemo(() => {
     const query = search.trim().toLowerCase();
     const skillQuery = skill.trim().toLowerCase();
 
-    return projects.filter((project) => {
+    return activeProjects.filter((project) => {
       const matchesSearch =
         !query ||
         project.title?.toLowerCase().includes(query) ||
@@ -54,7 +67,7 @@ export default function ProjectsPage() {
         project.requiredSkills?.some((item) => item.toLowerCase().includes(skillQuery));
       return matchesSearch && matchesType && matchesSkill;
     });
-  }, [projects, search, type, skill]);
+  }, [activeProjects, search, type, skill]);
 
   if (loading) {
     return <LoadingState label="Loading projects" />;
@@ -73,7 +86,7 @@ export default function ProjectsPage() {
             </p>
           </div>
           <div className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-3 text-sm text-white/54">
-            <strong className="text-white">{filteredProjects.length}</strong> visible / {projects.length} total
+            <strong className="text-white">{filteredProjects.length}</strong> visible / {activeProjects.length} active
           </div>
         </div>
       </section>
@@ -91,7 +104,7 @@ export default function ProjectsPage() {
         )}
       </div>
 
-      <section className="panel mb-6 grid gap-3 p-4 lg:grid-cols-[1fr_220px_220px]">
+      <section className="panel relative z-[70] mb-6 grid gap-3 overflow-visible p-4 lg:grid-cols-[1fr_220px_220px]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-3.5 text-white/35" size={18} />
           <input
@@ -101,23 +114,8 @@ export default function ProjectsPage() {
             placeholder="Search title or description"
           />
         </div>
-        <div className="relative">
-          <Filter className="pointer-events-none absolute left-3 top-3.5 text-white/35" size={18} />
-          <select className="input pl-10" value={type} onChange={(event) => setType(event.target.value)}>
-            <option className="bg-ink-900">All</option>
-            {projectTypes.map((projectType) => (
-              <option className="bg-ink-900" key={projectType}>
-                {projectType}
-              </option>
-            ))}
-          </select>
-        </div>
-        <input
-          className="input"
-          value={skill}
-          onChange={(event) => setSkill(event.target.value)}
-          placeholder="Filter by skill"
-        />
+        <SelectMenu label="Project type" value={type} onChange={setType} options={["All", ...projectTypes]} icon={Filter} />
+        <SkillFilterSelect value={skill} onChange={setSkill} label="Project skill filter" />
       </section>
 
       {error ? (
@@ -130,6 +128,13 @@ export default function ProjectsPage() {
         <EmptyState
           title="No projects posted yet"
           description="There are no projects yet. Post the first collaboration opportunity and start building your team."
+          actionLabel={isAuthenticated ? "Post Project" : "Create Account"}
+          actionTo={isAuthenticated ? "/projects/new" : "/signup"}
+        />
+      ) : activeProjects.length === 0 ? (
+        <EmptyState
+          title="No open projects right now"
+          description="All posted projects are currently closed. Post a new opportunity to make it visible in discovery."
           actionLabel={isAuthenticated ? "Post Project" : "Create Account"}
           actionTo={isAuthenticated ? "/projects/new" : "/signup"}
         />

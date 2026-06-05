@@ -119,6 +119,10 @@ a {
     animation: rise 0.55s ease both;
   }
 
+  .toast-motion {
+    animation: toast-slide 240ms ease both;
+  }
+
   .app-ambient {
     pointer-events: none;
     position: fixed;
@@ -344,6 +348,51 @@ a {
       0 0 48px rgba(103, 232, 249, 0.08),
       inset 0 1px 0 rgba(255, 255, 255, 0.12);
   }
+
+  .landing-shell .app-ambient {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 100vh;
+    contain: paint;
+  }
+
+  .landing-shell .app-ambient::before {
+    filter: blur(18px) saturate(1.04);
+    opacity: 0.64;
+    animation: none;
+  }
+
+  .landing-shell .app-ambient::after {
+    opacity: 0.42;
+    animation: none;
+  }
+
+  .landing-shell .app-header {
+    background: rgba(5, 6, 8, 0.94);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .landing-shell .app-header .brand-wordmark,
+  .landing-page > section .brand-wordmark,
+  .landing-page .landing-float-card,
+  .landing-page .landing-float-card * {
+    animation: none !important;
+  }
+
+  .landing-page section .panel,
+  .landing-page section .panel-soft,
+  .landing-page section .backdrop-blur-2xl {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  .landing-page section .panel,
+  .landing-page section .panel-soft {
+    box-shadow:
+      0 24px 72px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
 }
 
 @keyframes mesh-drift {
@@ -395,6 +444,104 @@ a {
   }
   50% {
     transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes toast-slide {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (max-width: 767px) {
+  body {
+    background:
+      radial-gradient(115% 60% at 50% 0%, rgba(103, 232, 249, 0.11), transparent 64%),
+      linear-gradient(180deg, #071015, #050608 42%);
+    background-attachment: scroll;
+    overscroll-behavior-x: none;
+  }
+
+  .app-ambient {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 100svh;
+    background:
+      radial-gradient(95% 65% at 18% 8%, rgba(103, 232, 249, 0.11), transparent 64%),
+      linear-gradient(180deg, rgba(9, 11, 15, 0.08), rgba(9, 11, 15, 0.72));
+    contain: paint;
+  }
+
+  .app-ambient::before {
+    inset: -10%;
+    filter: blur(14px);
+    opacity: 0.48;
+    animation: none;
+  }
+
+  .app-ambient::after {
+    opacity: 0.28;
+    animation: none;
+  }
+
+  .app-header,
+  .mobile-nav-surface,
+  .panel,
+  .panel-soft,
+  .glass-reflect,
+  .landing-hero *,
+  .landing-footer {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .app-header {
+    background: rgba(5, 6, 8, 0.96);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 10px 30px rgba(0, 0, 0, 0.28);
+  }
+
+  .panel {
+    background: rgba(15, 22, 28, 0.92);
+  }
+
+  .panel-soft {
+    background: rgba(13, 20, 26, 0.9);
+  }
+
+  .hero-mouse-glow,
+  .landing-particles {
+    display: none;
+  }
+
+  .landing-float-card,
+  .landing-float-card *,
+  .brand-wordmark {
+    animation: none !important;
+  }
+
+  .landing-float-card {
+    transform: none;
+  }
+
+  .landing-footer-surface {
+    background: rgba(13, 20, 26, 0.94);
+    box-shadow: 0 20px 56px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .footer-built-copy {
+    display: none;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .interactive-panel:hover,
+  .landing-float-card:hover {
+    transform: none;
   }
 }
 

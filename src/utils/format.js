@@ -13,6 +13,22 @@ export function formatDate(value) {
   }).format(date);
 }
 
+export function formatDateTime(value) {
+  if (!value) return "Just now";
+  const date = value.toDate ? value.toDate() : value.seconds ? new Date(value.seconds * 1000) : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Just now";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
 export function toTimestampNumber(value) {
   if (!value) return 0;
   if (typeof value.toMillis === "function") return value.toMillis();

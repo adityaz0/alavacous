@@ -1,12 +1,13 @@
 import { CheckCircle2, Github, Globe, Linkedin, MapPin, Save, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import Field from "../components/forms/Field.jsx";
+import SelectMenu from "../components/forms/SelectMenu.jsx";
 import SkillInput from "../components/forms/SkillInput.jsx";
 import Alert from "../components/ui/Alert.jsx";
 import Avatar from "../components/ui/Avatar.jsx";
 import Button from "../components/ui/Button.jsx";
 import LoadingState from "../components/ui/LoadingState.jsx";
-import Toast from "../components/ui/Toast.jsx";
+import { useToast } from "../components/ui/ToastProvider.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getUserProfile, updateUserProfile } from "../services/firestore.js";
 import { experienceLevels } from "../utils/constants.js";
@@ -29,8 +30,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(initialProfile);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const toast = useToast();
 
   useEffect(() => {
     let mounted = true;
@@ -112,7 +113,6 @@ export default function ProfilePage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setMessage("");
     setError("");
 
     const validationMessage = validateProfile();
@@ -135,7 +135,7 @@ export default function ProfilePage() {
         linkedinUrl: profile.linkedinUrl.trim(),
         email: user.email,
       });
-      setMessage("Profile saved.");
+      toast.success("Profile saved.");
     } catch (err) {
       setError(getServiceErrorMessage(err, "Could not save profile."));
     } finally {
@@ -149,8 +149,6 @@ export default function ProfilePage() {
 
   return (
     <main className="page-shell page-reveal py-6 sm:py-10">
-      <Toast variant="success">{message}</Toast>
-
       <section className="panel-soft glass-reflect mb-6 overflow-hidden p-5 sm:p-6">
         <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -230,13 +228,7 @@ export default function ProfilePage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Experience level">
-              <select className="input" value={profile.experienceLevel} onChange={(event) => updateField("experienceLevel", event.target.value)}>
-                {experienceLevels.map((level) => (
-                  <option className="bg-ink-900" key={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
+              <SelectMenu label="Experience level" value={profile.experienceLevel} onChange={(value) => updateField("experienceLevel", value)} options={experienceLevels} />
             </Field>
             <Field label="Location">
               <input className="input" value={profile.location} onChange={(event) => updateField("location", event.target.value)} placeholder="Your city" />

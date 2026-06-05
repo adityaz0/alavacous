@@ -10,13 +10,49 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == ownerId;
     }
 
-    function onlyApplicantCountIncremented() {
+    function onlyApplicantCountIncremented(projectId) {
       return signedIn()
         && request.resource.data.diff(resource.data).changedKeys().hasOnly([
           'applicantCount',
           'updatedAt'
         ])
-        && request.resource.data.applicantCount == resource.data.applicantCount + 1;
+        && request.resource.data.applicantCount == resource.data.applicantCount + 1
+        && !exists(/databases/$(database)/documents/applications/$(projectId + '_' + request.auth.uid))
+        && existsAfter(/databases/$(database)/documents/applications/$(projectId + '_' + request.auth.uid));
+    }
+
+    function ownerProjectFieldsAreStable() {
+      return request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.applicantCount == resource.data.applicantCount
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    function projectData(projectId) {
+      return get(/databases/$(database)/documents/projects/$(projectId)).data;
+    }
+
+    function acceptedApplicationPath(projectId, userId) {
+      return /databases/$(database)/documents/applications/$(projectId + '_' + userId);
+    }
+
+    function isAcceptedProjectMember(projectId) {
+      return signedIn()
+        && exists(acceptedApplicationPath(projectId, request.auth.uid))
+        && get(acceptedApplicationPath(projectId, request.auth.uid)).data.status == 'Accepted';
+    }
+
+    function chatPath(chatId) {
+      return /databases/$(database)/documents/chats/$(chatId);
+    }
+
+    function isChatMember(chatId) {
+      return signedIn()
+        && exists(chatPath(chatId))
+        && request.auth.uid in get(chatPath(chatId)).data.members;
+    }
+
+    function chatApplicationPath(projectId, applicantId) {
+      return /databases/$(database)/documents/applications/$(projectId + '_' + applicantId);
     }
 
     match /users/{userId} {
@@ -26,29 +62,141 @@ service cloud.firestore {
     }
 
     match /projects/{projectId} {
-      allow read: if true;
+      allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.applicantCount == 0;
-      allow update: if isOwner(resource.data.ownerId)
-        || onlyApplicantCountIncremented();
+      allow update: if (isOwner(resource.data.ownerId) && ownerProjectFieldsAreStable())
+        || onlyApplicantCountIncremented(projectId);
       allow delete: if isOwner(resource.data.ownerId);
     }
 
     match /applications/{applicationId} {
       allow create: if signedIn()
+        && applicationId == request.resource.data.projectId + '_' + request.auth.uid
         && request.resource.data.applicantId == request.auth.uid
+        && request.resource.data.ownerId == projectData(request.resource.data.projectId).ownerId
+        && request.resource.data.projectTitle == projectData(request.resource.data.projectId).title
+        && projectData(request.resource.data.projectId).status == 'Open'
         && request.resource.data.ownerId != request.auth.uid
         && request.resource.data.status == 'Pending';
       allow read: if signedIn()
         && (resource.data.applicantId == request.auth.uid
-          || resource.data.ownerId == request.auth.uid);
+          || resource.data.ownerId == request.auth.uid
+          || isAcceptedProjectMember(resource.data.projectId));
       allow update: if signedIn()
         && resource.data.ownerId == request.auth.uid
-        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
-          'status',
-          'updatedAt'
+        && (
+          (
+            request.resource.data.diff(resource.data).changedKeys().hasOnly([
+              'status',
+              'chatId',
+              'updatedAt'
+            ])
+            && resource.data.status == 'Pending'
+            && request.resource.data.status in ['Accepted', 'Rejected']
+          )
+          || (
+            request.resource.data.diff(resource.data).changedKeys().hasOnly([
+              'projectTitle',
+              'updatedAt'
+            ])
+            && request.resource.data.projectTitle == projectData(resource.data.projectId).title
+          )
+        );
+      allow delete: if signedIn()
+        && resource.data.ownerId == request.auth.uid
+        && !existsAfter(/databases/$(database)/documents/projects/$(resource.data.projectId));
+    }
+
+    match /chats/{chatId} {
+      allow read: if signedIn()
+        && request.auth.uid in resource.data.members;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.applicantId != request.auth.uid
+        && request.resource.data.projectId is string
+        && request.resource.data.projectTitle == projectData(request.resource.data.projectId).title
+        && projectData(request.resource.data.projectId).ownerId == request.auth.uid
+        && request.resource.data.members.size() == 2
+        && request.resource.data.members.hasAll([request.auth.uid, request.resource.data.applicantId])
+        && existsAfter(chatApplicationPath(request.resource.data.projectId, request.resource.data.applicantId))
+        && getAfter(chatApplicationPath(request.resource.data.projectId, request.resource.data.applicantId)).data.status == 'Accepted';
+      allow update: if signedIn()
+        && request.resource.data.projectId == resource.data.projectId
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.applicantId == resource.data.applicantId
+        && request.resource.data.members == resource.data.members
+        && request.resource.data.createdAt == resource.data.createdAt
+        && (
+          (
+            request.auth.uid in resource.data.members
+            && request.resource.data.projectTitle == resource.data.projectTitle
+            && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+              'lastMessage',
+              'lastMessageAt',
+              'updatedAt'
+            ])
+          )
+          || (
+            resource.data.ownerId == request.auth.uid
+            && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+              'projectTitle',
+              'updatedAt'
+            ])
+            && request.resource.data.projectTitle == projectData(resource.data.projectId).title
+          )
+        );
+      allow delete: if signedIn()
+        && resource.data.ownerId == request.auth.uid;
+
+      match /messages/{messageId} {
+        allow read: if isChatMember(chatId);
+        allow create: if isChatMember(chatId)
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.keys().hasOnly([
+            'senderId',
+            'senderName',
+            'text',
+            'createdAt'
+          ]);
+        allow update: if false;
+        allow delete: if signedIn()
+          && get(chatPath(chatId)).data.ownerId == request.auth.uid;
+      }
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn()
+        && resource.data.userId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.userId is string
+        && request.resource.data.type in [
+          'application-accepted',
+          'application-rejected',
+          'chat-message'
+        ]
+        && request.resource.data.read == false
+        && request.resource.data.keys().hasOnly([
+          'userId',
+          'type',
+          'title',
+          'message',
+          'link',
+          'read',
+          'createdAt'
         ]);
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'read',
+          'updatedAt'
+        ])
+        && request.resource.data.read == true;
       allow delete: if false;
     }
   }

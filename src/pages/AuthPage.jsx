@@ -17,7 +17,7 @@ export default function AuthPage({ mode }) {
   const location = useLocation();
   const redirectTo = location.state?.from || (isSignup ? "/profile" : "/dashboard");
 
-  if (!loading && isAuthenticated) {
+  if (!loading && isAuthenticated && !submitting) {
     return <Navigate to={redirectTo} replace />;
   }
 
@@ -71,10 +71,10 @@ export default function AuthPage({ mode }) {
       const email = form.email.trim();
       if (isSignup) {
         await signup({ ...form, name: form.name.trim(), email });
-        navigate("/profile");
+        navigate("/profile", { state: { notice: "Account created. Complete your profile." } });
       } else {
         await login(email, form.password);
-        navigate(redirectTo);
+        navigate(redirectTo, { state: { notice: "Welcome back to ALAVACOUS." } });
       }
     } catch (err) {
       setError(getAuthErrorMessage(err));
