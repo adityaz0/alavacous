@@ -312,8 +312,8 @@ export default function ProjectDetailPage() {
           />
         </section>
 
-        <aside className="grid content-start gap-6">
-          <section className="panel p-5 xl:sticky xl:top-24">
+        <aside className="grid content-start gap-6 xl:sticky xl:top-24 xl:self-start">
+          <section className="panel p-5">
             <h2 className="font-semibold text-white">{isOwner ? "Owner controls" : "Application"}</h2>
             <p className="mt-1 text-sm leading-6 text-white/44">
               {isOwner ? "Manage this project lifecycle and applicant access." : "Apply with a short, focused note about your fit."}
