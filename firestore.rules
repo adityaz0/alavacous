@@ -105,8 +105,7 @@ service cloud.firestore {
           )
         );
       allow delete: if signedIn()
-        && resource.data.ownerId == request.auth.uid
-        && !existsAfter(/databases/$(database)/documents/projects/$(resource.data.projectId));
+        && resource.data.ownerId == request.auth.uid;
     }
 
     match /chats/{chatId} {

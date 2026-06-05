@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, Edit3, ExternalLink, Layers, LockKeyhole, Send, Trash2, UserCheck, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, Edit3, ExternalLink, Layers, LockKeyhole, RotateCcw, Send, Trash2, UserCheck, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ApplicationList from "../components/applications/ApplicationList.jsx";
@@ -20,6 +20,7 @@ import {
   getProject,
   getUserProfile,
   listApplicationsByProject,
+  reopenProject,
   updateApplicationStatus,
 } from "../services/firestore.js";
 import { formatDate } from "../utils/format.js";
@@ -35,6 +36,9 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [reopening, setReopening] = useState(false);
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
+  const [reopenModalOpen, setReopenModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [error, setError] = useState("");
@@ -153,6 +157,7 @@ export default function ProjectDetailPage() {
     try {
       await closeProject(project.id, user.uid);
       setProject((current) => (current ? { ...current, status: "Closed" } : current));
+      setCloseModalOpen(false);
       toast.success("Project closed. Applications were preserved.");
     } catch (err) {
       const message = getServiceErrorMessage(err, "Could not close project.");
@@ -160,6 +165,31 @@ export default function ProjectDetailPage() {
       toast.error(message);
     } finally {
       setClosing(false);
+    }
+  }
+
+  async function handleReopenProject() {
+    if (!isOwner || !user) return;
+
+    if (project.status !== "Closed") {
+      toast.info("Only closed projects can be reopened.");
+      return;
+    }
+
+    setReopening(true);
+    setError("");
+
+    try {
+      await reopenProject(project.id, user.uid);
+      setProject((current) => (current ? { ...current, status: "Open" } : current));
+      setReopenModalOpen(false);
+      toast.success("Project reopened and visible in project discovery.");
+    } catch (err) {
+      const message = getServiceErrorMessage(err, "Could not reopen project.");
+      setError(message);
+      toast.error(message);
+    } finally {
+      setReopening(false);
     }
   }
 
@@ -290,12 +320,23 @@ export default function ProjectDetailPage() {
                   <Button
                     variant="secondary"
                     disabled={closing || project.status === "Closed"}
-                    onClick={handleCloseProject}
+                    onClick={() => setCloseModalOpen(true)}
                     className="w-full border-amber/30 bg-amber/10 text-amber hover:border-amber/45 hover:bg-amber/15"
                   >
                     <LockKeyhole size={16} />
                     {closing ? "Closing..." : project.status === "Closed" ? "Project Closed" : "Close Project"}
                   </Button>
+                  {project.status === "Closed" ? (
+                    <Button
+                      variant="success"
+                      disabled={reopening}
+                      onClick={() => setReopenModalOpen(true)}
+                      className="w-full"
+                    >
+                      <RotateCcw size={16} />
+                      {reopening ? "Reopening..." : "Reopen Project"}
+                    </Button>
+                  ) : null}
                   <Button variant="danger" disabled={deleting} onClick={() => setDeleteModalOpen(true)} className="w-full">
                     <Trash2 size={16} />
                     Delete Project
@@ -352,10 +393,36 @@ export default function ProjectDetailPage() {
       ) : null}
 
       <ConfirmModal
+        open={isOwner && closeModalOpen}
+        title="Close project?"
+        description="Closing removes this project from active discovery and prevents new applications. Existing applications and chats are preserved."
+        confirmLabel="Close Project"
+        submittingLabel="Closing..."
+        variant="warning"
+        submitting={closing}
+        onCancel={() => setCloseModalOpen(false)}
+        onConfirm={handleCloseProject}
+      />
+
+      <ConfirmModal
+        open={isOwner && reopenModalOpen}
+        title="Reopen project?"
+        description="This moves the project back to Open so builders can discover it and apply again."
+        confirmLabel="Reopen Project"
+        submittingLabel="Reopening..."
+        variant="success"
+        submitting={reopening}
+        onCancel={() => setReopenModalOpen(false)}
+        onConfirm={handleReopenProject}
+      />
+
+      <ConfirmModal
         open={isOwner && deleteModalOpen}
         title="Delete project?"
         description="This permanently deletes the project and all related applications. This cannot be undone."
         confirmLabel="Delete Project"
+        submittingLabel="Deleting..."
+        variant="danger"
         submitting={deleting}
         onCancel={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteProject}

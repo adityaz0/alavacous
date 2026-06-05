@@ -52,11 +52,11 @@ function SkillMenuSurface({ id, label, mode = "popover", children }) {
   return (
     <div
       id={id}
-      className={`glass-reflect rounded-lg border border-cyan/35 bg-ink-950/[0.992] p-1.5 shadow-[0_30px_100px_rgba(0,0,0,0.78),0_0_0_1px_rgba(103,232,249,0.16),0_0_42px_rgba(103,232,249,0.18),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-[36px] ${modeClass}`}
+      className={`skill-menu-surface glass-reflect rounded-lg p-1.5 ${modeClass}`}
       role="listbox"
       aria-label={label}
     >
-      <div className="max-h-64 overflow-y-auto pr-1 sm:max-h-72">{children}</div>
+      <div className="skill-menu-scroll pr-1">{children}</div>
     </div>
   );
 }

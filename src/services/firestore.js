@@ -204,6 +204,31 @@ export async function closeProject(projectId, ownerId) {
   });
 }
 
+export async function reopenProject(projectId, ownerId) {
+  requireFirestore();
+  const projectRef = doc(db, "projects", projectId);
+
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(projectRef);
+
+    if (!snapshot.exists()) {
+      throw new Error("This project no longer exists.");
+    }
+
+    const project = snapshot.data();
+    assertProjectOwner(project, ownerId);
+
+    if (project.status !== "Closed") {
+      throw new Error("Only closed projects can be reopened.");
+    }
+
+    transaction.update(projectRef, {
+      status: "Open",
+      updatedAt: serverTimestamp(),
+    });
+  });
+}
+
 export async function deleteProjectWithApplications(projectId, ownerId) {
   requireFirestore();
   const projectRef = doc(db, "projects", projectId);
@@ -215,28 +240,33 @@ export async function deleteProjectWithApplications(projectId, ownerId) {
 
   assertProjectOwner(snapshot.data(), ownerId);
 
-  const applicationsSnapshot = await getDocs(
-    query(collection(db, "applications"), where("projectId", "==", projectId))
-  );
-  const chatsSnapshot = await getDocs(query(collection(db, "chats"), where("projectId", "==", projectId)));
+  const applicationsSnapshot = await getDocs(query(collection(db, "applications"), where("ownerId", "==", ownerId)));
+  const applicationRefs = applicationsSnapshot.docs
+    .filter((applicationSnapshot) => applicationSnapshot.data().projectId === projectId)
+    .map((applicationSnapshot) => applicationSnapshot.ref);
+
+  const chatsSnapshot = await getDocs(query(collection(db, "chats"), where("members", "array-contains", ownerId)));
+  const projectChatDocs = chatsSnapshot.docs.filter((chatSnapshot) => chatSnapshot.data().projectId === projectId);
   const messageSnapshots = await Promise.all(
-    chatsSnapshot.docs.map((chatSnapshot) => getDocs(collection(db, "chats", chatSnapshot.id, "messages")))
+    projectChatDocs.map((chatSnapshot) => getDocs(collection(db, "chats", chatSnapshot.id, "messages")))
   );
   const messageRefs = messageSnapshots.flatMap((messagesSnapshot) =>
     messagesSnapshot.docs.map((messageSnapshot) => messageSnapshot.ref)
   );
+  const chatRefs = projectChatDocs.map((chatSnapshot) => chatSnapshot.ref);
 
-  await commitInChunks(
-    [
-      ...messageRefs,
-      ...chatsSnapshot.docs.map((chatSnapshot) => chatSnapshot.ref),
-      ...applicationsSnapshot.docs.map((application) => application.ref),
-      projectRef,
-    ],
-    (batch, ref) => {
-      batch.delete(ref);
-    }
-  );
+  await commitInChunks(messageRefs, (batch, ref) => {
+    batch.delete(ref);
+  });
+  await commitInChunks(chatRefs, (batch, ref) => {
+    batch.delete(ref);
+  });
+  await commitInChunks(applicationRefs, (batch, ref) => {
+    batch.delete(ref);
+  });
+  await commitInChunks([projectRef], (batch, ref) => {
+    batch.delete(ref);
+  });
 }
 
 export async function listProjectsByOwner(ownerId) {
