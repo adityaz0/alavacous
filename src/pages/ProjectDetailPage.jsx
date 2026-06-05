@@ -312,7 +312,7 @@ export default function ProjectDetailPage() {
           />
         </section>
 
-        <aside className="grid content-start gap-6 lg:fixed lg:right-8 lg:top-[180px] lg:z-30 lg:w-[380px] xl:right-[max(2rem,calc((100vw-80rem)/2+2rem))] xl:w-[420px]">
+        <aside className="grid content-start gap-6 lg:fixed lg:right-8 lg:top-[145px] lg:z-30 lg:w-[380px] xl:right-[max(2rem,calc((100vw-80rem)/2+2rem))] xl:w-[420px]">
           <section className="panel p-5">
             <h2 className="font-semibold text-white">{isOwner ? "Owner controls" : "Application"}</h2>
             <p className="mt-1 text-sm leading-6 text-white/44">
