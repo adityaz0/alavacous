@@ -51,7 +51,8 @@ export default function ProjectDetailPage() {
   const [reopenModalOpen, setReopenModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -74,7 +75,8 @@ export default function ProjectDetailPage() {
 
     async function loadProject() {
       setLoading(true);
-      setError("");
+      setLoadError("");
+      setActionError("");
       try {
         const data = await getProject(projectId);
         if (!mounted) return;
@@ -93,6 +95,7 @@ export default function ProjectDetailPage() {
               if (!isPermissionDenied(err)) {
                 throw err;
               }
+              if (mounted) setActionError("");
               if (mounted) setMyApplication(null);
             }
           } else if (mounted) {
@@ -116,13 +119,14 @@ export default function ProjectDetailPage() {
               if (!isPermissionDenied(err)) {
                 throw err;
               }
+              if (mounted) setActionError("");
               if (mounted) setApplications([]);
             }
           }
         }
       } catch (err) {
         logProjectDetailPermissionFailure("project detail core load", err);
-        if (mounted) setError(getServiceErrorMessage(err, "Could not load project."));
+        if (mounted) setLoadError(getServiceErrorMessage(err, "Could not load project."));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -143,12 +147,12 @@ export default function ProjectDetailPage() {
     }
 
     setSubmitting(true);
-    setError("");
+    setActionError("");
 
     try {
       const cleanMessage = message.trim();
       if (!cleanMessage) {
-        setError("Please add a short application message.");
+        setActionError("Please add a short application message.");
         return;
       }
 
@@ -171,7 +175,7 @@ export default function ProjectDetailPage() {
       setMessage("");
       toast.success("Application submitted. The project owner can now review it.");
     } catch (err) {
-      setError(getServiceErrorMessage(err, "Could not submit application."));
+      setActionError(getServiceErrorMessage(err, "Could not submit application."));
     } finally {
       setSubmitting(false);
     }
@@ -196,7 +200,7 @@ export default function ProjectDetailPage() {
     }
 
     setClosing(true);
-    setError("");
+    setActionError("");
 
     try {
       await closeProject(project.id, user.uid);
@@ -205,7 +209,6 @@ export default function ProjectDetailPage() {
       toast.success("Project closed. Applications were preserved.");
     } catch (err) {
       const message = getServiceErrorMessage(err, "Could not close project.");
-      setError(message);
       toast.error(message);
     } finally {
       setClosing(false);
@@ -221,7 +224,7 @@ export default function ProjectDetailPage() {
     }
 
     setReopening(true);
-    setError("");
+    setActionError("");
 
     try {
       await reopenProject(project.id, user.uid);
@@ -230,7 +233,6 @@ export default function ProjectDetailPage() {
       toast.success("Project reopened and visible in project discovery.");
     } catch (err) {
       const message = getServiceErrorMessage(err, "Could not reopen project.");
-      setError(message);
       toast.error(message);
     } finally {
       setReopening(false);
@@ -241,7 +243,7 @@ export default function ProjectDetailPage() {
     if (!isOwner || !user) return;
 
     setDeleting(true);
-    setError("");
+    setActionError("");
 
     try {
       await deleteProjectWithApplications(project.id, user.uid);
@@ -249,7 +251,6 @@ export default function ProjectDetailPage() {
       navigate("/projects", { state: { notice: "Project deleted." } });
     } catch (err) {
       const message = getServiceErrorMessage(err, "Could not delete project.");
-      setError(message);
       toast.error(message);
     } finally {
       setDeleting(false);
@@ -274,6 +275,12 @@ export default function ProjectDetailPage() {
         <ArrowLeft size={16} />
         Back to projects
       </Link>
+
+      {loadError ? (
+        <Alert variant="error" className="mb-5">
+          {loadError}
+        </Alert>
+      ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="grid gap-6">
@@ -335,12 +342,6 @@ export default function ProjectDetailPage() {
               {isOwner ? "Manage this project lifecycle and applicant access." : "Apply with a short, focused note about your fit."}
             </p>
 
-            {error ? (
-              <Alert variant="error" className="mt-4">
-                {error}
-              </Alert>
-            ) : null}
-
             {isOwner ? (
               <div className="mt-4 grid gap-4">
                 <div className="rounded-lg border border-cyan/15 bg-cyan/10 p-4">
@@ -400,6 +401,11 @@ export default function ProjectDetailPage() {
               </Button>
             ) : (
               <form className="mt-4 grid gap-3" onSubmit={handleApply}>
+                {actionError ? (
+                  <Alert variant="error">
+                    {actionError}
+                  </Alert>
+                ) : null}
                 <textarea
                   className="input min-h-32 resize-y"
                   value={message}
