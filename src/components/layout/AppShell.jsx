@@ -76,7 +76,7 @@ export default function AppShell() {
   }
 
   return (
-    <div className={`min-h-screen ${location.pathname === "/" ? "landing-shell" : ""}`}>
+    <div className={`relative isolate min-h-screen ${location.pathname === "/" ? "landing-shell" : ""}`}>
       <div className="app-ambient" aria-hidden="true" />
       <header className="app-header sticky top-0 z-40 border-b border-white/[0.09] bg-ink-950/72 shadow-[0_1px_0_rgba(255,255,255,0.04),0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
         <div className="page-shell flex h-16 items-center justify-between gap-4">

@@ -253,7 +253,7 @@ export default function ProjectDetailPage() {
         Back to projects
       </Link>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <section className="grid gap-6">
           <article className="panel-soft glass-reflect overflow-hidden p-5 sm:p-7">
             <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
@@ -312,7 +312,7 @@ export default function ProjectDetailPage() {
           />
         </section>
 
-        <aside className="grid content-start gap-6 xl:sticky xl:top-24 xl:self-start">
+        <aside className="grid content-start gap-6 lg:sticky lg:top-24 lg:self-start">
           <section className="panel p-5">
             <h2 className="font-semibold text-white">{isOwner ? "Owner controls" : "Application"}</h2>
             <p className="mt-1 text-sm leading-6 text-white/44">

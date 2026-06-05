@@ -178,14 +178,18 @@ a {
   .app-ambient {
     pointer-events: none;
     position: absolute;
-    inset: 0 0 auto;
-    height: 100svh;
+    inset: 0;
+    min-height: 100%;
     z-index: -1;
     overflow: hidden;
     contain: paint;
     background:
+      linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+      radial-gradient(110% 72% at 50% 42%, rgba(103, 232, 249, 0.06), transparent 62%),
       linear-gradient(115deg, rgba(9, 11, 15, 0.12), rgba(9, 11, 15, 0.86)),
       radial-gradient(120% 80% at 50% -10%, rgba(103, 232, 249, 0.12), transparent 60%);
+    background-size: 52px 52px, 52px 52px, auto, auto, auto;
   }
 
   .app-ambient::before {
@@ -209,9 +213,10 @@ a {
     background:
       linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px),
-      linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.055), transparent 48%);
-    background-size: 52px 52px, 52px 52px, 260% 100%;
-    mask-image: linear-gradient(to bottom, black, transparent 88%);
+      radial-gradient(85% 58% at 100% 58%, rgba(125, 211, 252, 0.08), transparent 64%),
+      radial-gradient(85% 58% at 0% 82%, rgba(110, 231, 183, 0.06), transparent 64%);
+    background-size: 52px 52px, 52px 52px, auto, auto;
+    mask-image: linear-gradient(to bottom, black, rgba(0, 0, 0, 0.74) 88%, rgba(0, 0, 0, 0.58));
     opacity: 0.34;
     animation: none;
   }
@@ -561,11 +566,15 @@ a {
 
   .app-ambient {
     position: absolute;
-    inset: 0 0 auto;
-    height: 100svh;
+    inset: 0;
+    height: auto;
+    min-height: 100%;
     background:
+      linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
       radial-gradient(95% 65% at 18% 8%, rgba(103, 232, 249, 0.11), transparent 64%),
       linear-gradient(180deg, rgba(9, 11, 15, 0.08), rgba(9, 11, 15, 0.72));
+    background-size: 46px 46px, 46px 46px, auto, auto;
     contain: paint;
   }
 
