@@ -36,6 +36,10 @@ function isPermissionDenied(error) {
   return error?.code === "permission-denied";
 }
 
+function isPermissionMessage(message = "") {
+  return message.toLowerCase().includes("permission");
+}
+
 export default function ProjectDetailPage() {
   const { projectId } = useParams();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -52,7 +56,7 @@ export default function ProjectDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [loadError, setLoadError] = useState("");
-  const [actionError, setActionError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -76,7 +80,7 @@ export default function ProjectDetailPage() {
     async function loadProject() {
       setLoading(true);
       setLoadError("");
-      setActionError("");
+      setSubmitError("");
       try {
         const data = await getProject(projectId);
         if (!mounted) return;
@@ -87,6 +91,7 @@ export default function ProjectDetailPage() {
           let existingApplication = null;
 
           if (!isProjectOwner) {
+            if (mounted) setSubmitError("");
             try {
               existingApplication = await getApplicationForProject(data.id, user.uid);
               if (mounted) setMyApplication(existingApplication);
@@ -95,7 +100,7 @@ export default function ProjectDetailPage() {
               if (!isPermissionDenied(err)) {
                 throw err;
               }
-              if (mounted) setActionError("");
+              if (mounted) setSubmitError("");
               if (mounted) setMyApplication(null);
             }
           } else if (mounted) {
@@ -119,7 +124,7 @@ export default function ProjectDetailPage() {
               if (!isPermissionDenied(err)) {
                 throw err;
               }
-              if (mounted) setActionError("");
+              if (mounted) setSubmitError("");
               if (mounted) setApplications([]);
             }
           }
@@ -147,12 +152,12 @@ export default function ProjectDetailPage() {
     }
 
     setSubmitting(true);
-    setActionError("");
+    setSubmitError("");
 
     try {
       const cleanMessage = message.trim();
       if (!cleanMessage) {
-        setActionError("Please add a short application message.");
+        setSubmitError("Please add a short application message.");
         return;
       }
 
@@ -175,7 +180,7 @@ export default function ProjectDetailPage() {
       setMessage("");
       toast.success("Application submitted. The project owner can now review it.");
     } catch (err) {
-      setActionError(getServiceErrorMessage(err, "Could not submit application."));
+      setSubmitError(getServiceErrorMessage(err, "Could not submit application."));
     } finally {
       setSubmitting(false);
     }
@@ -200,7 +205,6 @@ export default function ProjectDetailPage() {
     }
 
     setClosing(true);
-    setActionError("");
 
     try {
       await closeProject(project.id, user.uid);
@@ -224,7 +228,6 @@ export default function ProjectDetailPage() {
     }
 
     setReopening(true);
-    setActionError("");
 
     try {
       await reopenProject(project.id, user.uid);
@@ -243,7 +246,6 @@ export default function ProjectDetailPage() {
     if (!isOwner || !user) return;
 
     setDeleting(true);
-    setActionError("");
 
     try {
       await deleteProjectWithApplications(project.id, user.uid);
@@ -401,9 +403,9 @@ export default function ProjectDetailPage() {
               </Button>
             ) : (
               <form className="mt-4 grid gap-3" onSubmit={handleApply}>
-                {actionError ? (
+                {submitError && !isPermissionMessage(submitError) ? (
                   <Alert variant="error">
-                    {actionError}
+                    {submitError}
                   </Alert>
                 ) : null}
                 <textarea
