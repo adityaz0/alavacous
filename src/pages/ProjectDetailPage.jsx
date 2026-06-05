@@ -32,6 +32,10 @@ function logProjectDetailPermissionFailure(source, error) {
   }
 }
 
+function isPermissionDenied(error) {
+  return error?.code === "permission-denied";
+}
+
 export default function ProjectDetailPage() {
   const { projectId } = useParams();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -77,10 +81,24 @@ export default function ProjectDetailPage() {
         setProject(data);
 
         if (data && user) {
-          const existingApplication = await getApplicationForProject(data.id, user.uid);
-          if (mounted) setMyApplication(existingApplication);
-
           const isProjectOwner = data.ownerId === user.uid;
+          let existingApplication = null;
+
+          if (!isProjectOwner) {
+            try {
+              existingApplication = await getApplicationForProject(data.id, user.uid);
+              if (mounted) setMyApplication(existingApplication);
+            } catch (err) {
+              logProjectDetailPermissionFailure("my application query", err);
+              if (!isPermissionDenied(err)) {
+                throw err;
+              }
+              if (mounted) setMyApplication(null);
+            }
+          } else if (mounted) {
+            setMyApplication(null);
+          }
+
           const canViewTeamWorkspace = isProjectOwner || existingApplication?.status === "Accepted";
 
           if (canViewTeamWorkspace) {
@@ -95,6 +113,9 @@ export default function ProjectDetailPage() {
                 isProjectOwner ? "owner applications query" : "accepted team workspace query",
                 err
               );
+              if (!isPermissionDenied(err)) {
+                throw err;
+              }
               if (mounted) setApplications([]);
             }
           }
