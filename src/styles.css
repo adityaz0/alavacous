@@ -61,18 +61,32 @@ a {
   }
 
   .panel {
-    @apply rounded-lg border border-white/[0.12] bg-white/[0.065] shadow-panel backdrop-blur-2xl;
+    @apply rounded-lg border border-white/[0.12] bg-white/[0.065];
     position: relative;
     min-width: 0;
+    box-shadow:
+      0 24px 76px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
 
   .panel-soft {
-    @apply rounded-lg border border-white/[0.11] bg-white/[0.055] shadow-panel backdrop-blur-2xl;
+    @apply rounded-lg border border-white/[0.11] bg-white/[0.055];
     min-width: 0;
+    box-shadow:
+      0 24px 76px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
 
   .interactive-panel {
-    @apply transition duration-300;
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease,
+      background 180ms ease,
+      box-shadow 180ms ease;
   }
 
   .interactive-panel:hover {
@@ -80,8 +94,8 @@ a {
     border-color: rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.078);
     box-shadow:
-      0 38px 120px rgba(0, 0, 0, 0.5),
-      0 0 58px rgba(103, 232, 249, 0.08),
+      0 28px 88px rgba(0, 0, 0, 0.44),
+      0 0 34px rgba(103, 232, 249, 0.07),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
@@ -154,7 +168,7 @@ a {
   }
 
   .page-reveal {
-    animation: rise 0.55s ease both;
+    animation: page-fade 180ms ease both;
   }
 
   .toast-motion {
@@ -163,10 +177,12 @@ a {
 
   .app-ambient {
     pointer-events: none;
-    position: fixed;
-    inset: 0;
+    position: absolute;
+    inset: 0 0 auto;
+    height: 100svh;
     z-index: -1;
     overflow: hidden;
+    contain: paint;
     background:
       linear-gradient(115deg, rgba(9, 11, 15, 0.12), rgba(9, 11, 15, 0.86)),
       radial-gradient(120% 80% at 50% -10%, rgba(103, 232, 249, 0.12), transparent 60%);
@@ -181,9 +197,9 @@ a {
       radial-gradient(52% 42% at 84% 12%, rgba(125, 211, 252, 0.18), transparent 66%),
       radial-gradient(56% 46% at 72% 82%, rgba(110, 231, 183, 0.08), transparent 64%),
       conic-gradient(from 210deg at 58% 44%, rgba(103, 232, 249, 0.08), transparent, rgba(125, 211, 252, 0.11), transparent, rgba(103, 232, 249, 0.08));
-    filter: blur(26px) saturate(1.08);
-    opacity: 0.8;
-    animation: mesh-drift 18s ease-in-out infinite alternate;
+    filter: blur(18px) saturate(1.04);
+    opacity: 0.58;
+    animation: none;
   }
 
   .app-ambient::after {
@@ -196,8 +212,8 @@ a {
       linear-gradient(120deg, transparent 35%, rgba(255, 255, 255, 0.055), transparent 48%);
     background-size: 52px 52px, 52px 52px, 260% 100%;
     mask-image: linear-gradient(to bottom, black, transparent 88%);
-    opacity: 0.72;
-    animation: reflection-sweep 15s linear infinite;
+    opacity: 0.34;
+    animation: none;
   }
 
   .glass-reflect {
@@ -430,6 +446,44 @@ a {
     box-shadow:
       0 24px 72px rgba(0, 0, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+}
+
+.app-header,
+.mobile-nav-surface {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.shadow-panel {
+  box-shadow:
+    0 24px 76px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.shadow-auth {
+  box-shadow:
+    0 32px 104px rgba(0, 0, 0, 0.54),
+    0 0 72px rgba(103, 232, 249, 0.09) !important;
+}
+
+.backdrop-blur-2xl {
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.backdrop-blur-\[32px\],
+.backdrop-blur-\[36px\] {
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+@keyframes page-fade {
+  0% {
+    opacity: 0.94;
+  }
+  100% {
+    opacity: 1;
   }
 }
 

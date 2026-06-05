@@ -26,6 +26,12 @@ import {
 import { formatDate } from "../utils/format.js";
 import { getServiceErrorMessage } from "../utils/messages.js";
 
+function logProjectDetailPermissionFailure(source, error) {
+  if (import.meta.env.DEV && error?.code === "permission-denied") {
+    console.error("Project detail permission failed:", { source, error });
+  }
+}
+
 export default function ProjectDetailPage() {
   const { projectId } = useParams();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -63,6 +69,7 @@ export default function ProjectDetailPage() {
 
     async function loadProject() {
       setLoading(true);
+      setError("");
       try {
         const data = await getProject(projectId);
         if (!mounted) return;
@@ -72,12 +79,27 @@ export default function ProjectDetailPage() {
           const existingApplication = await getApplicationForProject(data.id, user.uid);
           if (mounted) setMyApplication(existingApplication);
 
-          if (data.ownerId === user.uid || existingApplication?.status === "Accepted") {
-            const applicants = await listApplicationsByProject(data.id);
-            if (mounted) setApplications(applicants);
+          const isProjectOwner = data.ownerId === user.uid;
+          const canViewTeamWorkspace = isProjectOwner || existingApplication?.status === "Accepted";
+
+          if (canViewTeamWorkspace) {
+            try {
+              const applicants = await listApplicationsByProject(data.id, {
+                ownerId: isProjectOwner ? user.uid : undefined,
+                acceptedOnly: !isProjectOwner,
+              });
+              if (mounted) setApplications(applicants);
+            } catch (err) {
+              logProjectDetailPermissionFailure(
+                isProjectOwner ? "owner applications query" : "accepted team workspace query",
+                err
+              );
+              if (mounted) setApplications([]);
+            }
           }
         }
       } catch (err) {
+        logProjectDetailPermissionFailure("project detail core load", err);
         if (mounted) setError(getServiceErrorMessage(err, "Could not load project."));
       } finally {
         if (mounted) setLoading(false);

@@ -138,8 +138,10 @@ export async function createProject(data) {
   return ref.id;
 }
 
-async function syncApplicationProjectTitle(projectId, projectTitle) {
-  const snapshot = await getDocs(query(collection(db, "applications"), where("projectId", "==", projectId)));
+async function syncApplicationProjectTitle(projectId, projectTitle, ownerId) {
+  const snapshot = await getDocs(
+    query(collection(db, "applications"), where("projectId", "==", projectId), where("ownerId", "==", ownerId))
+  );
   await commitInChunks(snapshot.docs, (batch, applicationSnapshot) => {
     batch.update(applicationSnapshot.ref, {
       projectTitle,
@@ -148,9 +150,11 @@ async function syncApplicationProjectTitle(projectId, projectTitle) {
   });
 }
 
-async function syncProjectChatTitle(projectId, projectTitle) {
-  const snapshot = await getDocs(query(collection(db, "chats"), where("projectId", "==", projectId)));
-  await commitInChunks(snapshot.docs, (batch, chatSnapshot) => {
+async function syncProjectChatTitle(projectId, projectTitle, ownerId) {
+  const snapshot = await getDocs(query(collection(db, "chats"), where("members", "array-contains", ownerId)));
+  const projectChats = snapshot.docs.filter((chatSnapshot) => chatSnapshot.data().projectId === projectId);
+
+  await commitInChunks(projectChats, (batch, chatSnapshot) => {
     batch.update(chatSnapshot.ref, {
       projectTitle,
       updatedAt: serverTimestamp(),
@@ -181,7 +185,10 @@ export async function updateProject(projectId, ownerId, data) {
   });
 
   if (shouldSyncApplicationTitles) {
-    await Promise.all([syncApplicationProjectTitle(projectId, data.title), syncProjectChatTitle(projectId, data.title)]);
+    await Promise.all([
+      syncApplicationProjectTitle(projectId, data.title, ownerId),
+      syncProjectChatTitle(projectId, data.title, ownerId),
+    ]);
   }
 }
 
@@ -345,9 +352,20 @@ export async function listApplicationsByOwner(ownerId) {
   return sortNewest(snapshot.docs.map(withId));
 }
 
-export async function listApplicationsByProject(projectId) {
+export async function listApplicationsByProject(projectId, options = {}) {
   if (!projectId || !firebaseConfigured) return [];
-  const snapshot = await getDocs(query(collection(db, "applications"), where("projectId", "==", projectId)));
+
+  const constraints = [where("projectId", "==", projectId)];
+
+  if (options.ownerId) {
+    constraints.push(where("ownerId", "==", options.ownerId));
+  }
+
+  if (options.acceptedOnly) {
+    constraints.push(where("status", "==", "Accepted"));
+  }
+
+  const snapshot = await getDocs(query(collection(db, "applications"), ...constraints));
   return sortNewest(snapshot.docs.map(withId));
 }
 

@@ -83,7 +83,10 @@ service cloud.firestore {
       allow read: if signedIn()
         && (resource.data.applicantId == request.auth.uid
           || resource.data.ownerId == request.auth.uid
-          || isAcceptedProjectMember(resource.data.projectId));
+          || (
+            resource.data.status == 'Accepted'
+            && isAcceptedProjectMember(resource.data.projectId)
+          ));
       allow update: if signedIn()
         && resource.data.ownerId == request.auth.uid
         && (
