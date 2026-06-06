@@ -1,10 +1,8 @@
 export default function LoadingState({ label = "Loading workspace" }) {
   return (
     <div className="flex min-h-[45vh] items-center justify-center">
-      <div className="glass-reflect flex items-center gap-3 rounded-lg border border-white/[0.14] bg-white/[0.07] px-4 py-3 text-sm text-white/70 shadow-panel backdrop-blur-2xl">
-        <span className="relative h-3 w-3 rounded-full bg-mint">
-          <span className="absolute inset-0 animate-ping rounded-full bg-mint/50" />
-        </span>
+      <div className="flex items-center gap-3 rounded-xl border border-line bg-ink-800 px-3.5 py-3 text-sm text-white/64">
+        <span className="h-2.5 w-2.5 rounded-full bg-white/50" />
         {label}
       </div>
     </div>

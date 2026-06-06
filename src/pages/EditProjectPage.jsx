@@ -99,14 +99,13 @@ export default function EditProjectPage() {
   }
 
   return (
-    <main className="page-shell page-reveal py-6 sm:py-10">
-      <Link to={`/projects/${projectId}`} className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-white/55 transition hover:text-white">
+    <main className="page-shell page-reveal py-4 sm:py-6">
+      <Link to={`/projects/${projectId}`} className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-white/55 transition hover:text-white">
         <ArrowLeft size={16} />
         Back to project
       </Link>
 
-      <section className="panel-soft glass-reflect mb-6 overflow-hidden p-5 sm:p-6">
-        <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
+      <section className="internal-page-header">
         <p className="label text-mint">Owner workspace</p>
         <h1 className="mt-2 text-3xl font-bold tracking-[-0.02em] text-white sm:text-4xl">Edit project</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-white/56">

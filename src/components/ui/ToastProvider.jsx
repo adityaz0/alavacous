@@ -35,8 +35,8 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="pointer-events-none fixed inset-x-4 top-20 z-[100] flex justify-center sm:inset-x-auto sm:right-4 sm:w-[380px]">
-        <div className="grid w-full max-w-[380px] gap-3">
+      <div className="pointer-events-none fixed inset-x-4 top-20 z-[100] flex justify-center sm:inset-x-auto sm:right-4 sm:w-[360px]">
+        <div className="grid w-full max-w-[360px] gap-2">
           {toasts.map((toast) => (
             <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />
           ))}
@@ -59,7 +59,7 @@ function ToastItem({ toast, onDismiss }) {
       onClick={() => onDismiss(toast.id)}
       aria-label="Dismiss notification"
     >
-      <Alert variant={toast.variant} className="shadow-auth">
+      <Alert variant={toast.variant} className="bg-ink-800 text-xs shadow-none">
         {toast.message}
       </Alert>
     </button>

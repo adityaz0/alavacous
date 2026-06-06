@@ -47,10 +47,9 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="page-shell page-reveal grid min-h-[calc(100vh-4rem)] place-items-center py-8 sm:py-12">
-      <section className="panel glass-reflect w-full max-w-md overflow-hidden p-6 sm:p-8">
-        <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan/45 to-transparent" aria-hidden="true" />
-        <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg border border-line bg-white/[0.06] text-cyan">
+    <main className="page-shell page-reveal grid min-h-[calc(100vh-4rem)] place-items-center py-6 sm:py-8">
+      <section className="panel w-full max-w-md overflow-hidden p-5 sm:p-6">
+        <span className="mb-5 flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-white/[0.06] text-cyan">
           <MailCheck size={23} />
         </span>
         <h1 className="text-2xl font-bold text-white">Reset password</h1>

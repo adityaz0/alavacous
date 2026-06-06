@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { listenNotifications } from "../../services/firestore.js";
 import { getServiceErrorMessage } from "../../utils/messages.js";
 import Button from "../ui/Button.jsx";
+import Avatar from "../ui/Avatar.jsx";
 import { useToast } from "../ui/ToastProvider.jsx";
 
 const navItems = [
@@ -78,16 +79,16 @@ export default function AppShell() {
   return (
     <div className={`relative isolate min-h-screen ${location.pathname === "/" ? "landing-shell" : ""}`}>
       <div className="app-ambient" aria-hidden="true" />
-      <header className="app-header sticky top-0 z-40 border-b border-white/[0.09] bg-ink-950/72 shadow-[0_1px_0_rgba(255,255,255,0.04),0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
-        <div className="page-shell flex h-16 items-center justify-between gap-4">
-          <Link to="/" className="flex min-w-0 items-center gap-3" onClick={() => setOpen(false)}>
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white text-sm font-black text-ink-950 shadow-[0_0_38px_rgba(103,232,249,0.22)]">
+      <header className="app-header sticky top-0 z-40 border-b border-white/[0.045] bg-ink-950">
+        <div className="page-shell flex h-16 items-center justify-between gap-3">
+          <Link to="/" className="flex min-w-0 items-center gap-2.5" onClick={() => setOpen(false)}>
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white bg-white text-xs font-black text-ink-950">
               A
             </span>
             <span className="brand-wordmark truncate text-xs font-black tracking-[0.2em] sm:text-sm sm:tracking-[0.24em]">ALAVACOUS</span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-0.5 md:flex">
             {showPublicLandingNav
               ? publicLandingNavItems.map((item) =>
                   item.to ? (
@@ -96,7 +97,7 @@ export default function AppShell() {
                       to={item.to}
                       className={({ isActive }) =>
                         `rounded-lg px-3 py-2 text-sm font-medium transition ${
-                          isActive ? "bg-white/[0.08] text-white" : "text-white/58 hover:bg-white/[0.055] hover:text-white"
+                          isActive ? "nav-pill-active bg-white/[0.055] text-white" : "text-white/58 hover:bg-white/[0.025] hover:text-white"
                         }`
                       }
                     >
@@ -104,7 +105,7 @@ export default function AppShell() {
                     </NavLink>
                   ) : (
                     <a
-                      className="rounded-lg px-3 py-2 text-sm font-medium text-white/58 transition hover:bg-white/[0.055] hover:text-white"
+                      className="rounded-lg px-3 py-2 text-sm font-medium text-white/58 transition hover:bg-white/[0.025] hover:text-white"
                       href={item.href}
                       key={item.label}
                     >
@@ -120,7 +121,7 @@ export default function AppShell() {
                       to={item.to}
                       className={({ isActive }) =>
                         `rounded-lg px-3 py-2 text-sm font-medium transition ${
-                          isActive ? "bg-white/[0.08] text-white" : "text-white/58 hover:bg-white/[0.055] hover:text-white"
+                          isActive ? "nav-pill-active bg-white/[0.055] text-white" : "text-white/58 hover:bg-white/[0.025] hover:text-white"
                         }`
                       }
                     >
@@ -131,7 +132,7 @@ export default function AppShell() {
 
           <div className="hidden items-center gap-2 md:flex">
             {!firebaseConfigured ? (
-              <span className="rounded-full border border-amber/30 bg-amber/10 px-3 py-1 text-xs font-semibold text-amber">
+            <span className="rounded-full border border-amber/20 bg-amber/10 px-2.5 py-1 text-xs font-semibold text-amber">
                 Firebase env needed
               </span>
             ) : null}
@@ -145,6 +146,9 @@ export default function AppShell() {
                 <Button variant="subtle" disabled={loggingOut} onClick={handleLogout}>
                   {loggingOut ? "Logging out..." : "Logout"}
                 </Button>
+                <Link to="/profile" aria-label="Profile">
+                  <Avatar name={user?.displayName} email={user?.email} size="sm" />
+                </Link>
               </>
             ) : (
               <>
@@ -160,7 +164,7 @@ export default function AppShell() {
 
           <button
             type="button"
-            className="focus-ring rounded-lg border border-line bg-white/[0.06] p-2 text-white transition hover:border-cyan/30 hover:bg-cyan/10 md:hidden"
+            className="focus-ring rounded-xl border border-line bg-ink-800 p-2 text-white transition hover:border-white/[0.08] hover:bg-white/[0.025] md:hidden"
             onClick={() => setOpen((value) => !value)}
             aria-label="Toggle navigation"
             aria-expanded={open}
@@ -170,8 +174,8 @@ export default function AppShell() {
         </div>
 
         {open ? (
-          <div className="mobile-nav-surface border-t border-white/[0.09] bg-ink-950/96 shadow-[0_26px_70px_rgba(0,0,0,0.45)] backdrop-blur-2xl md:hidden">
-            <div className="page-shell grid gap-2 py-4">
+          <div className="mobile-nav-surface border-t border-white/[0.045] bg-ink-950 md:hidden">
+            <div className="page-shell grid gap-2 py-3">
               {showPublicLandingNav
                 ? publicLandingNavItems.map((item) =>
                     item.to ? (
@@ -182,8 +186,8 @@ export default function AppShell() {
                         className={({ isActive }) =>
                           `rounded-lg border px-3 py-3 text-sm font-semibold transition ${
                             isActive
-                              ? "border-cyan/20 bg-cyan/10 text-cyan"
-                              : "border-transparent text-white/65 hover:border-white/[0.1] hover:bg-white/[0.055] hover:text-white"
+                              ? "nav-pill-active border-white/[0.08] bg-white/[0.04] text-white"
+                              : "border-transparent text-white/65 hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
                           }`
                         }
                       >
@@ -191,7 +195,7 @@ export default function AppShell() {
                       </NavLink>
                     ) : (
                       <a
-                        className="rounded-lg border border-transparent px-3 py-3 text-sm font-semibold text-white/65 transition hover:border-white/[0.1] hover:bg-white/[0.055] hover:text-white"
+                        className="rounded-lg border border-transparent px-3 py-2.5 text-sm font-semibold text-white/65 transition hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
                         href={item.href}
                         key={item.label}
                         onClick={() => setOpen(false)}
@@ -210,8 +214,8 @@ export default function AppShell() {
                         className={({ isActive }) =>
                           `rounded-lg border px-3 py-3 text-sm font-semibold transition ${
                             isActive
-                              ? "border-cyan/20 bg-cyan/10 text-cyan"
-                              : "border-transparent text-white/65 hover:border-white/[0.1] hover:bg-white/[0.055] hover:text-white"
+                              ? "nav-pill-active border-white/[0.08] bg-white/[0.04] text-white"
+                              : "border-transparent text-white/65 hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
                           }`
                         }
                       >
@@ -257,12 +261,12 @@ function NotificationBell({ unreadCount }) {
   return (
     <Link
       to="/notifications"
-      className="focus-ring relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-white/[0.055] text-white/62 transition duration-200 hover:-translate-y-0.5 hover:border-cyan/30 hover:bg-cyan/10 hover:text-cyan hover:shadow-[0_0_32px_rgba(103,232,249,0.12)]"
+      className="focus-ring relative inline-flex h-8 w-8 items-center justify-center rounded-xl border border-line bg-ink-800 text-white/62 transition duration-150 hover:-translate-y-px hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
       aria-label={unreadCount ? `${unreadCount} unread notifications` : "Notifications"}
     >
       <Bell size={18} />
       {unreadCount ? (
-        <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full border border-ink-950 bg-cyan px-1.5 py-0.5 text-center text-[10px] font-black text-ink-950">
+        <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full border border-ink-950 bg-white px-1.5 py-0.5 text-center text-[10px] font-black text-ink-950">
           {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       ) : null}

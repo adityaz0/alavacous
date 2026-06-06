@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -166,33 +165,14 @@ const networkNodes = [
 ];
 
 export default function LandingPage() {
-  const heroRef = useRef(null);
   const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    const hero = heroRef.current;
-    const supportsPointerGlow = window.matchMedia(
-      "(min-width: 768px) and (pointer: fine) and (prefers-reduced-motion: no-preference)"
-    );
-    if (!hero || !supportsPointerGlow.matches) return undefined;
-
-    function updateGlow(event) {
-      const rect = hero.getBoundingClientRect();
-      hero.style.setProperty("--hero-x", `${event.clientX - rect.left}px`);
-      hero.style.setProperty("--hero-y", `${event.clientY - rect.top}px`);
-    }
-
-    hero.addEventListener("pointermove", updateGlow);
-    return () => hero.removeEventListener("pointermove", updateGlow);
-  }, []);
 
   return (
     <main className="landing-page">
-      <section ref={heroRef} className="landing-hero relative isolate overflow-hidden border-b border-white/[0.09]">
-        <HeroAtmosphere />
-        <div className="page-shell relative z-10 grid min-h-[calc(100vh-7rem)] gap-8 py-8 sm:gap-10 sm:py-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:py-9">
-          <div className="max-w-2xl animate-rise">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan/20 bg-cyan/10 px-3 py-1.5 text-xs font-semibold text-cyan shadow-[0_0_36px_rgba(103,232,249,0.12)] backdrop-blur">
+      <section className="landing-hero relative isolate overflow-hidden border-b border-white/[0.08]">
+        <div className="page-shell relative z-10 grid min-h-[calc(100vh-7rem)] gap-8 py-6 sm:gap-10 sm:py-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:py-9">
+          <div className="max-w-2xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/70">
               <Sparkles size={14} />
               Collaboration-first builder platform
             </div>
@@ -206,25 +186,25 @@ export default function LandingPage() {
               A collaboration-first platform where students, developers, designers, creators, freelancers, and founders discover projects, form teams, and build real products together.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button as="link" to="/signup" className="auth-submit-button group px-6 py-3">
+              <Button as="link" to="/signup" className="group px-5 py-3">
                 Get Started
-                <ArrowRight className="transition duration-200 group-hover:translate-x-1" size={18} />
+                <ArrowRight className="transition duration-150 group-hover:translate-x-1" size={18} />
               </Button>
               <Button
                 as="link"
                 to="/projects"
                 variant="secondary"
-                className="group px-6 py-3 hover:-translate-y-1 hover:border-cyan/35 hover:shadow-[0_18px_56px_rgba(103,232,249,0.14),inset_0_1px_0_rgba(255,255,255,0.1)]"
+                className="group px-5 py-3"
               >
                 <Search size={18} />
                 Explore Projects
-                <ArrowRight className="transition duration-200 group-hover:translate-x-1" size={16} />
+                <ArrowRight className="transition duration-150 group-hover:translate-x-1" size={16} />
               </Button>
             </div>
             <div className="mt-8 flex flex-wrap gap-2">
               {heroChips.map((item) => (
                 <a
-                  className="chip-strong transition duration-200 hover:-translate-y-0.5 hover:border-cyan/35 hover:bg-cyan/15 hover:text-white hover:shadow-[0_0_30px_rgba(103,232,249,0.14)]"
+                  className="chip-strong transition duration-150 hover:-translate-y-px hover:border-white/16 hover:bg-white/[0.05] hover:text-white"
                   href={item.href}
                   key={item.label}
                 >
@@ -247,37 +227,13 @@ export default function LandingPage() {
   );
 }
 
-function HeroAtmosphere() {
-  return (
-    <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-      <div className="hero-mouse-glow" />
-      <div className="absolute inset-0 bg-[radial-gradient(70%_70%_at_45%_18%,rgba(103,232,249,0.16),transparent_58%),linear-gradient(to_bottom,rgba(5,6,8,0.05),#050608_92%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:58px_58px] opacity-55 [mask-image:linear-gradient(to_bottom,black,transparent_88%)]" />
-      <div className="landing-particles">
-        {Array.from({ length: 12 }).map((_, index) => (
-          <span
-            key={index}
-            style={{
-              "--x": `${(index * 37) % 100}%`,
-              "--y": `${12 + ((index * 23) % 76)}%`,
-              "--delay": `${index * 0.28}s`,
-              "--duration": `${7 + (index % 5)}s`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function HeroProductVisual() {
   return (
-    <div className="relative mx-auto w-full max-w-2xl animate-rise [animation-delay:140ms]">
-      <div className="absolute -inset-8 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(103,232,249,0.18),transparent_56%)] blur-2xl" aria-hidden="true" />
-      <div className="glass-reflect relative rounded-lg border border-white/[0.14] bg-white/[0.075] p-3.5 shadow-auth backdrop-blur-2xl sm:p-5">
+    <div className="relative mx-auto w-full max-w-2xl">
+      <div className="relative rounded-[18px] border border-white/[0.08] bg-ink-800 p-3.5 sm:p-4">
         <div className="mb-4 flex flex-col gap-3 border-b border-white/[0.1] pb-3.5 sm:mb-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pb-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-cyan/25 bg-cyan/10 text-cyan">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-white/70">
               <Layers3 size={20} />
             </span>
             <div>
@@ -285,7 +241,7 @@ function HeroProductVisual() {
               <p className="text-xs text-white/45">Profile to team formation</p>
             </div>
           </div>
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-3 py-1 text-xs font-bold text-mint">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1 text-xs font-bold text-white/70">
             <Zap size={13} />
             Active workflow
           </span>
@@ -302,37 +258,36 @@ function HeroProductVisual() {
 
 function BuilderNetworkGraph() {
   return (
-    <div className="landing-float-card glass-reflect relative min-h-[19.5rem] overflow-hidden rounded-lg border border-white/[0.12] bg-ink-900/70 p-3.5 shadow-[0_24px_80px_rgba(0,0,0,0.36)] sm:min-h-[21rem] sm:p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(103,232,249,0.15),transparent_48%)]" aria-hidden="true" />
+    <div className="interactive-panel relative min-h-[19.5rem] overflow-hidden rounded-[18px] border border-white/[0.08] bg-ink-900 p-3.5 sm:min-h-[21rem] sm:p-4">
       <div className="relative z-10 flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-white/42">Builder network</p>
           <h3 className="mt-2 text-lg font-semibold text-white">Roles connect around intent.</h3>
         </div>
-        <Network className="text-cyan" size={22} />
+        <Network className="text-white/58" size={22} />
       </div>
 
-      <svg className="absolute inset-0 h-full w-full opacity-80" viewBox="0 0 420 340" aria-hidden="true">
-        <defs>
-          <linearGradient id="networkLine" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="rgba(103,232,249,0.12)" />
-            <stop offset="55%" stopColor="rgba(103,232,249,0.5)" />
-            <stop offset="100%" stopColor="rgba(110,231,183,0.18)" />
-          </linearGradient>
-        </defs>
-        <path d="M92 82 C152 94 172 132 210 170 C255 122 294 92 340 76" fill="none" stroke="url(#networkLine)" strokeWidth="2" />
-        <path d="M92 82 C92 170 126 244 142 270 C172 240 184 210 210 170" fill="none" stroke="url(#networkLine)" strokeWidth="2" />
-        <path d="M210 170 C260 210 292 244 338 266 C352 202 350 134 340 76" fill="none" stroke="url(#networkLine)" strokeWidth="2" />
-        <path d="M142 270 C202 242 260 246 338 266" fill="none" stroke="url(#networkLine)" strokeWidth="2" />
+      <svg className="absolute inset-0 h-full w-full opacity-70" viewBox="0 0 420 340" aria-hidden="true">
+        <g fill="none" stroke="rgba(255,255,255,0.13)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.25">
+          <path d="M98 116 L210 190 L336 116" />
+          <path d="M142 268 L210 190 L338 268" />
+          <path d="M210 190 V116" />
+        </g>
+        <g fill="rgba(255,255,255,0.22)">
+          <circle cx="98" cy="116" r="3" />
+          <circle cx="210" cy="190" r="3" />
+          <circle cx="336" cy="116" r="3" />
+          <circle cx="142" cy="268" r="3" />
+          <circle cx="338" cy="268" r="3" />
+        </g>
       </svg>
 
-      {networkNodes.map((node, index) => (
+      {networkNodes.map((node) => (
         <div
-          className={`absolute z-10 ${node.className} rounded-lg border border-cyan/20 bg-ink-950/85 px-3 py-2 text-xs font-semibold text-white shadow-[0_18px_52px_rgba(0,0,0,0.45),0_0_26px_rgba(103,232,249,0.08)] backdrop-blur-2xl`}
+          className={`absolute z-10 ${node.className} rounded-xl border border-white/[0.1] bg-ink-800 px-3 py-2 text-xs font-semibold text-white`}
           key={node.label}
-          style={{ animation: `premium-float ${7 + index * 0.4}s ease-in-out infinite`, animationDelay: `${index * 0.2}s` }}
         >
-          <span className="mr-2 inline-block h-2 w-2 rounded-full bg-cyan shadow-[0_0_18px_rgba(103,232,249,0.8)]" />
+          <span className="mr-2 inline-block h-2 w-2 rounded-full bg-white/55" />
           {node.label}
         </div>
       ))}
@@ -345,18 +300,17 @@ function TeamFormationFlow() {
     <div className="grid gap-2.5 sm:gap-3">
       {flowNodes.map((node, index) => (
         <div
-          className="landing-float-card glass-reflect rounded-lg border border-white/[0.12] bg-white/[0.065] p-3.5 shadow-[0_20px_70px_rgba(0,0,0,0.34)] sm:p-4"
-          style={{ animationDelay: `${index * 0.16}s` }}
+          className="interactive-panel rounded-[18px] border border-white/[0.08] bg-ink-900 p-3.5 sm:p-4"
           key={node.title}
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cyan/25 bg-cyan/10 text-cyan sm:h-11 sm:w-11">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-white/70 sm:h-10 sm:w-10">
               <node.icon size={20} />
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-semibold text-white">{node.title}</h3>
-                {index < flowNodes.length - 1 ? <ArrowRight className="text-white/36" size={16} /> : <CheckCircle2 className="text-mint" size={16} />}
+                {index < flowNodes.length - 1 ? <ArrowRight className="text-white/36" size={16} /> : <CheckCircle2 className="text-white/60" size={16} />}
               </div>
               <p className="mt-1 text-xs leading-5 text-white/54">{node.description}</p>
             </div>
@@ -385,11 +339,11 @@ function CorePlatformSection() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {platformCards.map((card) => (
           <article
-            className="glass-reflect panel group scroll-mt-24 p-4 transition duration-300 hover:-translate-y-1.5 hover:border-cyan/30 hover:bg-white/[0.085] hover:shadow-[0_34px_100px_rgba(0,0,0,0.48),0_0_54px_rgba(103,232,249,0.09),inset_0_1px_0_rgba(255,255,255,0.12)] sm:p-5"
+            className="panel interactive-panel group scroll-mt-24 p-4 sm:p-4"
             id={card.id}
             key={card.title}
           >
-            <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-cyan/20 bg-cyan/10 text-cyan transition group-hover:shadow-glow sm:mb-5 sm:h-11 sm:w-11">
+            <span className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-white/70 transition sm:mb-5 sm:h-10 sm:w-10">
               <card.icon size={21} />
             </span>
             <h3 className="text-lg font-semibold text-white">{card.title}</h3>
@@ -399,7 +353,7 @@ function CorePlatformSection() {
       </div>
 
       <div className="mt-8 grid gap-4 lg:grid-cols-[0.85fr_1.15fr] lg:items-stretch">
-        <div className="glass-reflect panel p-4 sm:p-5">
+        <div className="panel p-4 sm:p-4">
           <p className="label text-cyan">Trust by design</p>
           <h3 className="mt-3 text-2xl font-bold text-white">
             Built on better collaboration principles.
@@ -411,11 +365,11 @@ function CorePlatformSection() {
         <div className="grid gap-3 sm:grid-cols-2">
           {trustCards.map((card) => (
             <div
-              className="glass-reflect rounded-lg border border-white/[0.1] bg-white/[0.055] p-3.5 transition duration-300 hover:-translate-y-1 hover:border-cyan/25 hover:bg-white/[0.075] hover:shadow-[0_20px_60px_rgba(103,232,249,0.08)] sm:p-4"
+              className="interactive-panel rounded-[18px] border border-white/[0.08] bg-ink-800 p-3.5 sm:p-4"
               key={card}
             >
               <div className="flex items-center gap-3 text-sm font-semibold text-white/76">
-                <CheckCircle2 className="shrink-0 text-cyan" size={17} />
+                <CheckCircle2 className="shrink-0 text-white/58" size={17} />
                 {card}
               </div>
             </div>
@@ -428,7 +382,7 @@ function CorePlatformSection() {
 
 function HowItWorks() {
   return (
-    <section className="scroll-mt-24 border-y border-white/[0.08] bg-white/[0.025] py-14 sm:py-16" id="how-it-works">
+    <section className="scroll-mt-24 border-y border-white/[0.08] bg-ink-950 py-14 sm:py-16" id="how-it-works">
       <div className="page-shell">
         <div className="mx-auto mb-8 max-w-2xl text-center">
           <p className="label text-cyan">How it works</p>
@@ -440,12 +394,11 @@ function HowItWorks() {
         <div className="grid gap-4 lg:grid-cols-3">
           {steps.map((step, index) => (
             <article
-              className="glass-reflect panel group p-4 transition duration-300 hover:-translate-y-1.5 hover:border-cyan/30 hover:bg-white/[0.08] hover:shadow-[0_34px_100px_rgba(0,0,0,0.48),0_0_54px_rgba(103,232,249,0.09),inset_0_1px_0_rgba(255,255,255,0.12)] sm:p-5"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="panel interactive-panel group p-4 sm:p-4"
               key={step.title}
             >
               <div className="mb-5 flex items-center justify-between sm:mb-6">
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-cyan/20 bg-cyan/10 text-cyan transition group-hover:shadow-glow sm:h-12 sm:w-12">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-white/70 transition sm:h-11 sm:w-11">
                   <step.icon size={22} />
                 </span>
                 <span className="text-xs font-black tracking-[0.18em] text-white/28">{step.number}</span>
@@ -477,12 +430,12 @@ function BuilderTypesSection() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {audienceCards.map((card) => (
-          <article className="glass-reflect panel-soft group p-3.5 transition duration-300 hover:-translate-y-1.5 hover:border-cyan/30 hover:bg-white/[0.08] hover:shadow-[0_30px_90px_rgba(0,0,0,0.44),0_0_44px_rgba(103,232,249,0.08)] sm:p-4" key={card.title}>
+          <article className="panel-soft interactive-panel group p-3.5 sm:p-4" key={card.title}>
             <div className="mb-3 flex items-center justify-between sm:mb-4">
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.06] text-cyan transition group-hover:border-cyan/25 group-hover:bg-cyan/10 sm:h-11 sm:w-11">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-white/70 transition group-hover:border-white/16 group-hover:bg-white/[0.05] sm:h-10 sm:w-10">
                 <card.icon size={21} />
               </span>
-              <ArrowRight className="text-white/22 transition group-hover:translate-x-1 group-hover:text-cyan" size={18} />
+              <ArrowRight className="text-white/22 transition group-hover:translate-x-1 group-hover:text-white" size={18} />
             </div>
             <h3 className="text-lg font-semibold text-white">{card.title}</h3>
             <p className="mt-2.5 text-sm leading-6 text-white/56 sm:mt-3">{card.description}</p>
@@ -500,18 +453,18 @@ function Footer({ isAuthenticated }) {
   });
 
   return (
-    <footer className="landing-footer border-t border-white/[0.09] bg-ink-950/90 py-5 backdrop-blur-2xl sm:py-10" id="footer">
+    <footer className="landing-footer border-t border-white/[0.08] bg-ink-950 py-4 sm:py-8" id="footer">
       <div className="page-shell">
-        <div className="landing-footer-surface glass-reflect rounded-lg border border-white/[0.1] bg-white/[0.04] p-3.5 shadow-panel sm:p-6">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.7fr_0.7fr] lg:gap-8">
+        <div className="landing-footer-surface rounded-[18px] border border-white/[0.08] bg-ink-800 p-3.5 sm:p-5">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-4 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.7fr_0.7fr] lg:gap-6">
             <div className="col-span-2 lg:col-span-1">
               <Link className="inline-flex items-center gap-3" to="/">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white text-sm font-black text-ink-950 shadow-[0_0_38px_rgba(103,232,249,0.22)] sm:h-10 sm:w-10">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-white bg-white text-sm font-black text-ink-950 sm:h-9 sm:w-9">
                   A
                 </span>
                 <span className="brand-wordmark text-sm font-black tracking-[0.24em]">ALAVACOUS</span>
               </Link>
-              <p className="mt-3 text-sm font-semibold text-white sm:mt-4">Find Builders. Build Together.</p>
+              <p className="mt-3 text-sm font-semibold text-white">Find Builders. Build Together.</p>
               <p className="mt-2 max-w-lg text-xs leading-5 text-white/52 sm:mt-3 sm:max-w-sm sm:text-sm sm:leading-6">
                 A collaboration-first platform where students, developers, designers, creators, freelancers, and founders build real products together.
               </p>
@@ -550,9 +503,9 @@ function Footer({ isAuthenticated }) {
             />
           </div>
 
-          <div className="mt-5 flex flex-col gap-1.5 border-t border-white/[0.08] pt-3 text-xs text-white/42 sm:mt-8 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pt-5">
+          <div className="mt-4 flex flex-col gap-1.5 border-t border-white/[0.08] pt-3 text-xs text-white/42 sm:mt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pt-4">
             <span>&copy; 2026 ALAVACOUS. All rights reserved.</span>
-            <span className="footer-built-copy text-cyan/70">Built for focused student collaboration.</span>
+            <span className="footer-built-copy text-white/44">Built for focused student collaboration.</span>
           </div>
         </div>
       </div>
@@ -564,10 +517,10 @@ function FooterColumn({ title, links }) {
   return (
     <div>
       <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan/75">{title}</h3>
-      <div className="mt-2 grid gap-0.5 sm:mt-4 sm:gap-1">
+      <div className="mt-2 grid gap-0.5 sm:mt-3 sm:gap-0.5">
         {links.map((link) => {
           const classes =
-            "-mx-2 inline-flex min-h-7 w-fit items-center rounded-md px-2 text-sm text-white/54 transition duration-200 hover:bg-white/[0.06] hover:text-white active:bg-cyan/10 active:text-cyan focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan/30";
+            "-mx-2 inline-flex min-h-7 w-fit items-center rounded-md px-2 text-sm text-white/54 transition duration-150 hover:bg-white/[0.04] hover:text-white active:bg-white/[0.06] active:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/18";
 
           if (link.to) {
             return (

@@ -85,7 +85,7 @@ export default function ProjectForm({
   }
 
   return (
-    <form className="panel grid gap-5 p-5 sm:p-6" onSubmit={onSubmit} noValidate>
+    <form className="panel grid gap-5 p-4 sm:p-5" onSubmit={onSubmit} noValidate>
       {error ? <Alert variant="error">{error}</Alert> : null}
 
       <Field label="Project title">

@@ -1,23 +1,23 @@
 const styles = {
-  Open: "border-mint/35 bg-mint/10 text-mint shadow-[0_0_28px_rgba(110,231,183,0.1)]",
-  "In Progress": "border-cyan/35 bg-cyan/10 text-cyan shadow-[0_0_28px_rgba(103,232,249,0.1)]",
-  Closed: "border-white/15 bg-white/[0.07] text-white/55",
-  Pending: "border-amber/40 bg-amber/10 text-amber shadow-[0_0_28px_rgba(248,214,109,0.08)]",
-  Accepted: "border-mint/35 bg-mint/10 text-mint shadow-[0_0_28px_rgba(110,231,183,0.1)]",
-  Rejected: "border-red-400/35 bg-red-500/10 text-red-200 shadow-[0_0_28px_rgba(248,113,113,0.1)]",
-  Removed: "border-red-400/30 bg-red-500/10 text-red-100 shadow-[0_0_28px_rgba(248,113,113,0.08)]",
-  Left: "border-white/15 bg-white/[0.07] text-white/55",
+  Open: "border-white/[0.06] bg-white/[0.035] text-white/66",
+  "In Progress": "border-white/[0.06] bg-white/[0.035] text-white/66",
+  Closed: "border-white/[0.045] bg-white/[0.025] text-white/44",
+  Pending: "border-white/[0.055] bg-white/[0.03] text-white/56",
+  Accepted: "border-emerald-400/[0.12] bg-emerald-400/[0.055] text-emerald-100/70",
+  Rejected: "border-red-400/[0.12] bg-red-400/[0.055] text-red-100/68",
+  Removed: "border-red-400/[0.12] bg-red-400/[0.055] text-red-100/68",
+  Left: "border-white/[0.045] bg-white/[0.025] text-white/44",
 };
 
 const dots = {
-  Open: "bg-mint",
-  "In Progress": "bg-cyan",
-  Closed: "bg-white/45",
-  Pending: "bg-amber",
-  Accepted: "bg-mint",
-  Rejected: "bg-red-300",
-  Removed: "bg-red-300",
-  Left: "bg-white/45",
+  Open: "bg-white/50",
+  "In Progress": "bg-white/50",
+  Closed: "bg-white/32",
+  Pending: "bg-white/42",
+  Accepted: "bg-emerald-200/60",
+  Rejected: "bg-red-200/58",
+  Removed: "bg-red-200/58",
+  Left: "bg-white/32",
 };
 
 export default function StatusBadge({ status }) {

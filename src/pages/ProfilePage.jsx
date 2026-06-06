@@ -156,9 +156,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="page-shell page-reveal py-6 sm:py-10">
-      <section className="panel-soft glass-reflect mb-6 overflow-hidden p-5 sm:p-6">
-        <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
+    <main className="page-shell page-reveal py-4 sm:py-6">
+      <section className="internal-page-header">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
             <Avatar name={profile.fullName} email={user.email} size="xl" />
@@ -169,10 +168,10 @@ export default function ProfilePage() {
               </h1>
               <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-white/54">
                 <span>@{profile.username || "username"}</span>
-                <span className="rounded-full border border-white/[0.1] bg-white/[0.045] px-2.5 py-1 text-xs font-semibold text-white/56">
+                <span className="rounded-full border border-line bg-white/[0.025] px-2.5 py-1 text-xs font-medium text-white/52">
                   {profile.roleTitle || profile.experienceLevel}
                 </span>
-                <span className="rounded-full border border-mint/20 bg-mint/10 px-2.5 py-1 text-xs font-semibold text-mint">
+                <span className="rounded-full border border-line bg-white/[0.025] px-2.5 py-1 text-xs font-medium text-white/52">
                   {profile.availability}
                 </span>
                 {profile.location ? (
@@ -185,26 +184,26 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="w-full rounded-lg border border-white/[0.12] bg-white/[0.055] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:w-80">
+          <div className="w-full rounded-2xl border border-line bg-ink-700 p-4 sm:w-80">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">Completion</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-white/38">Completion</p>
                 <strong className="mt-1 block text-2xl font-black text-white">{completion}%</strong>
               </div>
-              <span className="flex h-12 w-12 items-center justify-center rounded-lg border border-cyan/20 bg-cyan/10 text-cyan">
-                <ShieldCheck size={22} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-white/[0.025] text-white/48">
+                <ShieldCheck size={19} />
               </span>
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.08]">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-cyan to-mint shadow-[0_0_24px_rgba(103,232,249,0.32)] transition-all duration-500"
+                className="h-full rounded-full bg-white/70 transition-[width] duration-150"
                 style={{ width: `${completion}%` }}
               />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-white/52">
               {completionItems.map((item) => (
                 <span className="inline-flex items-center gap-1.5" key={item.label}>
-                  <CheckCircle2 size={13} className={item.done ? "text-mint" : "text-white/22"} />
+                  <CheckCircle2 size={13} className={item.done ? "text-white/58" : "text-white/22"} />
                   {item.label}
                 </span>
               ))}
@@ -214,7 +213,7 @@ export default function ProfilePage() {
       </section>
 
       <form className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]" onSubmit={handleSubmit} noValidate>
-        <section className="panel grid gap-5 p-5 sm:p-6">
+        <section className="panel grid gap-5 p-4 sm:p-5">
           {error ? <Alert variant="error">{error}</Alert> : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -267,9 +266,8 @@ export default function ProfilePage() {
           </Button>
         </section>
 
-        <aside className="grid content-start gap-6">
-          <section className="panel interactive-panel overflow-hidden p-5">
-            <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" aria-hidden="true" />
+        <aside className="grid content-start gap-5 lg:sticky lg:top-[100px] lg:self-start">
+          <section className="panel interactive-panel overflow-hidden p-4">
             <h2 className="font-semibold text-white">Profile preview</h2>
             <div className="mt-5 flex items-center gap-4">
               <Avatar name={profile.fullName} email={user.email} size="lg" />
@@ -279,7 +277,7 @@ export default function ProfilePage() {
                 <p className="mt-1 truncate text-xs font-semibold uppercase tracking-[0.14em] text-white/34">
                   {profile.roleTitle || profile.experienceLevel}
                 </p>
-                <p className="mt-1 text-xs text-mint">{profile.availability}</p>
+                <p className="mt-1 text-xs text-white/46">{profile.availability}</p>
               </div>
             </div>
             <p className={`mt-5 text-sm leading-6 ${profile.bio ? "text-white/62" : "text-white/38"}`}>
@@ -293,28 +291,28 @@ export default function ProfilePage() {
                   </span>
                 ))
               ) : (
-                <span className="rounded-full border border-dashed border-white/[0.14] px-3 py-1 text-xs text-white/38">
+                  <span className="rounded-full border border-dashed border-line px-3 py-1 text-xs text-white/38">
                   No skills added yet
                 </span>
               )}
             </div>
           </section>
 
-          <section className="panel grid gap-4 p-5">
+          <section className="panel grid gap-4 p-4">
             <div>
               <h2 className="font-semibold text-white">Links</h2>
               <p className="mt-1 text-xs leading-5 text-white/42">These links help project owners quickly verify your work.</p>
             </div>
             <div className="grid gap-2">
               {linkItems.map(({ label, value, icon: Icon }) => (
-                <div className="flex min-w-0 items-center justify-between gap-3 rounded-lg border border-white/[0.08] bg-white/[0.035] px-3 py-2" key={label}>
+                <div className="flex min-w-0 items-center justify-between gap-3 rounded-lg border border-line bg-white/[0.02] px-3 py-2" key={label}>
                   <span className="inline-flex min-w-0 items-center gap-2 text-sm text-white/62">
-                    <Icon size={15} className="shrink-0 text-cyan" />
+                    <Icon size={15} className="shrink-0 text-white/42" />
                     <span>{label}</span>
                   </span>
                   {value ? (
                     <a
-                      className="truncate text-xs font-semibold text-mint transition hover:text-cyan"
+                      className="truncate text-xs font-semibold text-white/62 transition hover:text-white"
                       href={value}
                       rel="noreferrer"
                       target="_blank"

@@ -52,7 +52,7 @@ function SkillMenuSurface({ id, label, mode = "popover", children }) {
   return (
     <div
       id={id}
-      className={`skill-menu-surface glass-reflect rounded-lg p-1.5 ${modeClass}`}
+      className={`skill-menu-surface rounded-xl p-1.5 ${modeClass}`}
       role="listbox"
       aria-label={label}
     >
@@ -127,7 +127,7 @@ export default function SkillInput({ value = [], onChange, label = "Skills", sug
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-3.5 text-white/35" size={18} />
         <input
-          className={`input pr-12 pl-10 ${open ? "border-cyan/55 bg-white/[0.105] ring-4 ring-cyan/10" : ""}`}
+          className={`input pr-12 pl-10 ${open ? "border-white/20 bg-ink-700" : ""}`}
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -144,7 +144,7 @@ export default function SkillInput({ value = [], onChange, label = "Skills", sug
         />
         <button
           type="button"
-          className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.055] text-white/50 transition hover:border-cyan/30 hover:bg-cyan/10 hover:text-cyan"
+          className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-ink-700 text-white/50 transition hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
           aria-label={cleanedQuery ? `Add ${cleanedQuery}` : "Open skills"}
           onClick={cleanedQuery ? handleAdd : () => setOpen((current) => !current)}
         >
@@ -161,8 +161,8 @@ export default function SkillInput({ value = [], onChange, label = "Skills", sug
                     type="button"
                     className={`flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition duration-150 ${
                       selected
-                        ? "border-cyan/25 bg-cyan/15 text-cyan"
-                        : "border-transparent text-white/74 hover:border-white/[0.12] hover:bg-white/[0.085] hover:text-white"
+                        ? "border-white/[0.08] bg-white/[0.035] text-white"
+                        : "border-transparent text-white/68 hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
                     }`}
                     key={skill}
                     role="option"
@@ -186,7 +186,7 @@ export default function SkillInput({ value = [], onChange, label = "Skills", sug
             {canAddCustom ? (
               <button
                 type="button"
-                className="mt-1 flex w-full items-center justify-between gap-3 rounded-md border border-cyan/20 bg-cyan/10 px-3 py-2.5 text-left text-sm font-semibold text-cyan transition hover:border-cyan/35 hover:bg-cyan/15"
+                className="mt-1 flex w-full items-center justify-between gap-3 rounded-md border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 text-left text-sm font-semibold text-white transition hover:border-white/[0.08] hover:bg-white/[0.035]"
                 onClick={() => addSkill(cleanedQuery)}
               >
                 <span className="min-w-0 truncate">Add custom "{cleanedQuery}"</span>
@@ -213,7 +213,7 @@ export default function SkillInput({ value = [], onChange, label = "Skills", sug
             </span>
           ))
         ) : (
-          <span className="rounded-full border border-dashed border-white/[0.14] px-3 py-1 text-xs text-white/38">
+          <span className="rounded-full border border-dashed border-line px-3 py-1 text-xs text-white/38">
             No skills selected
           </span>
         )}
@@ -266,7 +266,7 @@ export function SkillFilterSelect({ value = "", onChange, label = "Skill filter"
     <div className="relative z-[90] min-w-0" ref={rootRef}>
       <Search className="pointer-events-none absolute left-3 top-3.5 text-white/35" size={18} />
       <input
-        className={`input pr-12 pl-10 ${open ? "border-cyan/55 bg-white/[0.105] ring-4 ring-cyan/10" : ""}`}
+        className={`input pr-12 pl-10 ${open ? "border-white/20 bg-ink-700" : ""}`}
         value={displayValue}
         onChange={(event) => {
           setQuery(event.target.value);
@@ -286,7 +286,7 @@ export function SkillFilterSelect({ value = "", onChange, label = "Skill filter"
       />
       <button
         type="button"
-        className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.055] text-white/50 transition hover:border-cyan/30 hover:bg-cyan/10 hover:text-cyan"
+        className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-ink-700 text-white/50 transition hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
         aria-label={value ? "Clear skill filter" : "Open skill filter"}
         onClick={value ? clearSkill : () => setOpen((current) => !current)}
       >
@@ -298,7 +298,7 @@ export function SkillFilterSelect({ value = "", onChange, label = "Skill filter"
           <button
             type="button"
             className={`mb-1 flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition duration-150 ${
-              !value ? "border-cyan/25 bg-cyan/15 text-cyan" : "border-transparent text-white/74 hover:border-white/[0.12] hover:bg-white/[0.085] hover:text-white"
+              !value ? "border-white/[0.08] bg-white/[0.035] text-white" : "border-transparent text-white/68 hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
             }`}
             role="option"
             aria-selected={!value}
@@ -316,8 +316,8 @@ export function SkillFilterSelect({ value = "", onChange, label = "Skill filter"
                   type="button"
                   className={`flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition duration-150 ${
                     selected
-                      ? "border-cyan/25 bg-cyan/15 text-cyan"
-                      : "border-transparent text-white/74 hover:border-white/[0.12] hover:bg-white/[0.085] hover:text-white"
+                      ? "border-white/[0.08] bg-white/[0.035] text-white"
+                      : "border-transparent text-white/68 hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
                   }`}
                   key={skill}
                   role="option"
@@ -332,7 +332,7 @@ export function SkillFilterSelect({ value = "", onChange, label = "Skill filter"
           ) : query.trim() ? (
             <button
               type="button"
-              className="flex w-full items-center justify-between gap-3 rounded-md border border-cyan/20 bg-cyan/10 px-3 py-2.5 text-left text-sm font-semibold text-cyan transition hover:border-cyan/35 hover:bg-cyan/15"
+              className="flex w-full items-center justify-between gap-3 rounded-md border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 text-left text-sm font-semibold text-white transition hover:border-white/[0.08] hover:bg-white/[0.035]"
               onClick={() => selectSkill(query.trim())}
             >
               <span className="min-w-0 truncate">Use "{query.trim()}"</span>

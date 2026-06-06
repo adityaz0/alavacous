@@ -78,9 +78,8 @@ export default function NotificationsPage() {
   const unreadCount = notifications.filter((notification) => !notification.read).length;
 
   return (
-    <main className="page-shell page-reveal py-6 sm:py-10">
-      <section className="panel-soft glass-reflect mb-6 overflow-hidden p-5 sm:p-6">
-        <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
+    <main className="page-shell page-reveal py-4 sm:py-6">
+      <section className="internal-page-header">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="label text-mint">Activity center</p>
@@ -115,7 +114,7 @@ export default function NotificationsPage() {
           actionTo="/dashboard"
         />
       ) : (
-        <section className="grid gap-3">
+        <section className="panel overflow-hidden">
           {notifications.map((notification) => (
             <NotificationCard
               key={notification.id}
@@ -131,44 +130,59 @@ export default function NotificationsPage() {
 }
 
 function NotificationCard({ notification, marking, onMarkRead }) {
+  const rowContent = (
+    <div className="flex min-w-0 items-start gap-3">
+      <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-line bg-white/[0.02] text-white/42">
+        <Bell size={13} />
+      </span>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          {!notification.read ? <span className="mt-1 h-1.5 w-1.5 rounded-full bg-white/58" /> : null}
+          <h2 className="break-words text-sm font-semibold text-white">{notification.title}</h2>
+        </div>
+        <p className="mt-1 line-clamp-2 break-words text-sm leading-6 text-white/50">{notification.message}</p>
+      </div>
+    </div>
+  );
+
   return (
     <article
-      className={`panel interactive-panel overflow-hidden p-4 sm:p-5 ${
-        notification.read ? "opacity-80" : "border-cyan/20 bg-cyan/[0.07]"
+      className={`border-b border-line px-3.5 py-3 last:border-b-0 sm:px-4 ${
+        notification.read ? "opacity-75" : "bg-white/[0.025]"
       }`}
     >
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan/45 to-transparent" aria-hidden="true" />
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-start gap-3">
-            <span className="rounded-lg border border-cyan/20 bg-cyan/10 p-2 text-cyan">
-              <Bell size={17} />
-            </span>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="break-words text-base font-semibold text-white">{notification.title}</h2>
-                {!notification.read ? (
-                  <span className="rounded-full border border-mint/25 bg-mint/10 px-2 py-0.5 text-[11px] font-semibold text-mint">
-                    New
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-2 break-words text-sm leading-6 text-white/56">{notification.message}</p>
-              <p className="mt-2 text-xs text-white/34">{formatDateTime(notification.createdAt)}</p>
-            </div>
-          </div>
+          {notification.link ? (
+            <Link
+              to={notification.link}
+              className="block rounded-lg transition duration-150 hover:bg-white/[0.018]"
+              onClick={() => !notification.read && onMarkRead()}
+            >
+              {rowContent}
+            </Link>
+          ) : (
+            rowContent
+          )}
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2 lg:w-56 lg:grid-cols-1">
+        <div className="grid gap-2 sm:grid-cols-[auto_auto_auto] sm:items-center lg:flex lg:shrink-0">
+          <span className="text-xs text-white/32 lg:mr-2 lg:self-center">{formatDateTime(notification.createdAt)}</span>
           {notification.link ? (
-            <Button as="link" to={notification.link} variant="secondary" onClick={() => !notification.read && onMarkRead()}>
-              <ArrowUpRight size={16} />
+            <Button
+              as="link"
+              to={notification.link}
+              variant="secondary"
+              onClick={() => !notification.read && onMarkRead()}
+              className="px-2.5 py-1.5 text-xs"
+            >
+              <ArrowUpRight size={15} />
               Open
             </Button>
           ) : null}
           {!notification.read ? (
-            <Button variant="secondary" disabled={marking} onClick={onMarkRead}>
-              <CheckCheck size={16} />
+            <Button variant="secondary" disabled={marking} onClick={onMarkRead} className="px-2.5 py-1.5 text-xs">
+              <CheckCheck size={15} />
               {marking ? "Updating..." : "Mark read"}
             </Button>
           ) : null}

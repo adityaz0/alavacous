@@ -3,9 +3,9 @@ import Button from "../components/ui/Button.jsx";
 
 export default function LegalPlaceholderPage({ type }) {
   return (
-    <main className="page-shell grid min-h-[calc(100vh-4rem)] place-items-center py-8 sm:py-12">
-      <section className="panel-soft glass-reflect w-full max-w-2xl p-5 sm:p-8">
-        <span className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-cyan/20 bg-cyan/10 text-cyan">
+    <main className="page-shell grid min-h-[calc(100vh-4rem)] place-items-center py-6 sm:py-8">
+      <section className="panel-soft w-full max-w-2xl p-4 sm:p-6">
+        <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-cyan/20 bg-cyan/10 text-cyan">
           <FileText size={20} />
         </span>
         <p className="label mt-6 text-cyan">ALAVACOUS Legal</p>

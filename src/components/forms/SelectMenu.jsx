@@ -57,7 +57,7 @@ export default function SelectMenu({ value, onChange, options = [], icon: Icon, 
       <button
         type="button"
         className={`input flex items-center justify-between gap-3 text-left ${
-          open ? "border-cyan/55 bg-white/[0.105] ring-4 ring-cyan/10" : ""
+          open ? "border-white/[0.14] bg-white/[0.025]" : ""
         } ${Icon ? "pl-10" : ""}`}
         aria-controls={menuId}
         aria-expanded={open}
@@ -70,13 +70,13 @@ export default function SelectMenu({ value, onChange, options = [], icon: Icon, 
       >
         {Icon ? <Icon className="pointer-events-none absolute left-3 top-3.5 text-white/35" size={18} /> : null}
         <span className="min-w-0 truncate">{value}</span>
-        <ChevronDown className={`shrink-0 text-white/42 transition ${open ? "rotate-180 text-cyan" : ""}`} size={17} />
+        <ChevronDown className={`shrink-0 text-white/42 transition ${open ? "rotate-180 text-white" : ""}`} size={17} />
       </button>
 
       {open ? (
         <div
           id={menuId}
-          className="glass-reflect absolute left-0 right-0 top-[calc(100%+0.55rem)] z-[140] overflow-hidden rounded-lg border border-cyan/30 bg-ink-950/[0.985] p-1.5 shadow-[0_26px_90px_rgba(0,0,0,0.72),0_0_0_1px_rgba(103,232,249,0.12),0_0_34px_rgba(103,232,249,0.16),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-[32px]"
+          className="absolute left-0 right-0 top-[calc(100%+0.55rem)] z-[140] overflow-hidden rounded-xl border border-line bg-ink-800 p-1.5"
           role="listbox"
           aria-label={`${label} options`}
         >
@@ -88,8 +88,8 @@ export default function SelectMenu({ value, onChange, options = [], icon: Icon, 
                 id={`${menuId}-${index}`}
                 className={`flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition duration-150 ${
                   selected
-                    ? "border-cyan/25 bg-cyan/15 text-cyan shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_18px_rgba(103,232,249,0.08)]"
-                    : "border-transparent text-white/74 hover:border-white/[0.12] hover:bg-white/[0.085] hover:text-white"
+                    ? "border-white/[0.08] bg-white/[0.035] text-white"
+                    : "border-transparent text-white/68 hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white"
                 }`}
                 key={option}
                 role="option"

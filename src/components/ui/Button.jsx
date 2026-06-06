@@ -2,15 +2,15 @@ import { Link } from "react-router-dom";
 
 const variants = {
   primary:
-    "border-white/20 bg-white text-ink-950 shadow-[0_18px_48px_rgba(103,232,249,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] hover:-translate-y-0.5 hover:border-cyan/40 hover:bg-mint hover:shadow-[0_22px_58px_rgba(103,232,249,0.22),inset_0_1px_0_rgba(255,255,255,0.95)] focus-visible:ring-white/30",
+    "border-white bg-white text-ink-950 hover:-translate-y-px hover:border-white hover:brightness-[1.03] focus-visible:ring-white/20",
   secondary:
-    "border-line bg-white/[0.06] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.1] hover:shadow-[0_14px_42px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.1)] focus-visible:ring-cyan/20",
+    "border-white/[0.03] bg-transparent text-white/84 hover:-translate-y-px hover:border-white/[0.08] hover:bg-white/[0.025] hover:text-white hover:brightness-[1.02] focus-visible:ring-white/12",
   subtle:
-    "border-transparent bg-transparent text-white/70 hover:bg-white/[0.06] hover:text-white focus-visible:ring-cyan/20",
+    "border-transparent bg-transparent text-white/62 hover:bg-white/[0.025] hover:text-white hover:brightness-[1.02] focus-visible:ring-white/12",
   danger:
-    "border-red-400/30 bg-red-500/10 text-red-100 hover:-translate-y-0.5 hover:border-red-300/40 hover:bg-red-500/20 hover:shadow-[0_14px_42px_rgba(248,113,113,0.12)] focus-visible:ring-red-400/20",
+    "border-red-950/60 bg-red-950/70 text-red-100 hover:-translate-y-px hover:border-red-800/80 hover:bg-red-900/70 hover:brightness-[1.02] focus-visible:ring-red-400/20",
   success:
-    "border-mint/30 bg-mint/10 text-mint hover:-translate-y-0.5 hover:border-mint/45 hover:bg-mint/15 hover:shadow-[0_14px_42px_rgba(110,231,183,0.12)] focus-visible:ring-mint/20",
+    "border-white/[0.03] bg-white/[0.035] text-white/84 hover:-translate-y-px hover:border-white/[0.08] hover:bg-white/[0.045] hover:brightness-[1.02] focus-visible:ring-white/12",
 };
 
 export default function Button({
@@ -22,7 +22,7 @@ export default function Button({
   children,
   ...props
 }) {
-  const classes = `focus-ring inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition duration-200 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-55 ${variants[variant]} ${className}`;
+  const classes = `focus-ring inline-flex items-center justify-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-semibold transition duration-150 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-55 ${variants[variant]} ${className}`;
 
   if (as === "link") {
     return (

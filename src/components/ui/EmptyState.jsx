@@ -3,12 +3,11 @@ import Button from "./Button.jsx";
 
 export default function EmptyState({ title, description, actionLabel, actionTo }) {
   return (
-    <div className="panel-soft relative flex min-h-[260px] flex-col items-center justify-center overflow-hidden px-6 py-12 text-center">
-      <div className="absolute inset-x-16 top-0 h-px bg-gradient-to-r from-transparent via-cyan/45 to-transparent" aria-hidden="true" />
-      <span className="mb-4 rounded-lg border border-white/[0.14] bg-white/[0.07] p-3 text-cyan shadow-glow">
-        <Inbox size={22} />
+    <div className="panel-soft relative flex min-h-[220px] flex-col items-center justify-center overflow-hidden px-5 py-8 text-center">
+      <span className="mb-4 rounded-xl border border-line bg-ink-700 p-2.5 text-white/56">
+        <Inbox size={20} />
       </span>
-      <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/38">
+      <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-white/34">
         <Sparkles size={13} />
         Empty state
       </div>

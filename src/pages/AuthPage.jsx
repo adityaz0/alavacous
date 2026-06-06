@@ -1,4 +1,4 @@
-import { ArrowRight, BadgeCheck, LoaderCircle, LockKeyhole, Mail, Sparkles, User, Users } from "lucide-react";
+import { ArrowRight, BadgeCheck, LoaderCircle, LockKeyhole, Mail, User, Users } from "lucide-react";
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import Field from "../components/forms/Field.jsx";
@@ -84,18 +84,13 @@ export default function AuthPage({ mode }) {
   }
 
   return (
-    <main className="page-shell page-reveal relative grid min-h-[calc(100vh-4rem)] items-start justify-items-center overflow-hidden py-4 sm:py-6 lg:place-items-center lg:py-14">
-      <section className="glass-reflect grid w-full max-w-6xl overflow-hidden rounded-lg border border-white/[0.14] bg-white/[0.065] shadow-auth backdrop-blur-2xl lg:grid-cols-[0.95fr_1fr]">
-        <aside className="relative hidden min-h-[650px] overflow-hidden border-r border-white/[0.1] bg-ink-900/48 p-8 lg:block">
-          <div className="auth-panel-grid absolute inset-0 opacity-70" aria-hidden="true" />
-          <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/70 to-transparent" aria-hidden="true" />
-          <div className="absolute -right-24 top-16 h-72 w-72 rounded-full bg-cyan/10 blur-3xl" aria-hidden="true" />
-          <div className="absolute bottom-0 left-0 h-72 w-full bg-gradient-to-t from-cyan/10 via-transparent to-transparent" aria-hidden="true" />
-
+    <main className="page-shell page-reveal relative grid min-h-[calc(100vh-4rem)] items-start justify-items-center overflow-hidden py-4 sm:py-5 lg:place-items-center lg:py-14">
+      <section className="grid w-full max-w-6xl overflow-hidden rounded-[18px] border border-white/[0.08] bg-ink-800 lg:grid-cols-[0.95fr_1fr]">
+        <aside className="relative hidden min-h-[650px] overflow-hidden border-r border-white/[0.08] bg-ink-900 p-6 lg:block">
           <div className="relative z-10 flex h-full flex-col justify-between">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-cyan/20 bg-cyan/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-cyan">
-                <Sparkles size={14} />
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/58">
+                <BadgeCheck size={14} />
                 ALAVACOUS ACCESS
               </span>
               <h1 className="brand-wordmark mt-7 text-5xl font-black leading-none tracking-[-0.02em]">
@@ -111,9 +106,9 @@ export default function AuthPage({ mode }) {
                   ["Owner workflow", "Review applicants with clear pending, accepted, and rejected states."],
                   ["Builder identity", "Show your skills, portfolio, GitHub, and LinkedIn in one place."],
                 ].map(([title, copy]) => (
-                  <div className="glass-reflect rounded-lg border border-white/[0.11] bg-white/[0.055] p-4" key={title}>
+                  <div className="rounded-[18px] border border-white/[0.08] bg-ink-800 p-4" key={title}>
                     <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
-                      <BadgeCheck size={16} className="text-mint" />
+                      <BadgeCheck size={16} className="text-white/58" />
                       {title}
                     </div>
                     <p className="text-xs leading-5 text-white/52">{copy}</p>
@@ -122,13 +117,13 @@ export default function AuthPage({ mode }) {
               </div>
             </div>
 
-            <div className="glass-reflect rounded-lg border border-white/[0.12] bg-white/[0.06] p-4">
+            <div className="rounded-[18px] border border-white/[0.08] bg-ink-800 p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-white/42">Phase 1 signal</p>
                   <strong className="mt-1 block text-2xl font-black text-white">Full-stack MVP</strong>
                 </div>
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-cyan/20 bg-cyan/10 text-cyan">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-white/70">
                   <Users size={20} />
                 </span>
               </div>
@@ -136,8 +131,7 @@ export default function AuthPage({ mode }) {
           </div>
         </aside>
 
-        <div className="relative p-5 sm:p-8 lg:p-10">
-          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" aria-hidden="true" />
+        <div className="relative p-4 sm:p-5 lg:p-6">
           <div className="mx-auto w-full max-w-md">
             <div className="mb-6 lg:hidden">
               <span className="brand-wordmark text-3xl font-black tracking-[0.16em]">ALAVACOUS</span>
@@ -145,7 +139,7 @@ export default function AuthPage({ mode }) {
             </div>
 
             <div className="mb-6">
-              <span className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.07] text-cyan shadow-glow">
+              <span className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-white/70">
                 {isSignup ? <User size={20} /> : <LockKeyhole size={20} />}
               </span>
               <h2 className="text-3xl font-bold tracking-[-0.02em] text-white">{isSignup ? "Create account" : "Welcome back"}</h2>
@@ -213,12 +207,12 @@ export default function AuthPage({ mode }) {
               </Field>
 
               {!isSignup ? (
-                <Link to="/forgot-password" className="justify-self-start text-sm font-semibold text-cyan hover:text-white">
+                <Link to="/forgot-password" className="justify-self-start text-sm font-semibold text-white/72 hover:text-white">
                   Forgot password?
                 </Link>
               ) : null}
 
-              <Button type="submit" disabled={submitting || !firebaseConfigured} className="auth-submit-button mt-1 py-3">
+              <Button type="submit" disabled={submitting || !firebaseConfigured} className="mt-1 py-3">
                 {submitting ? (
                   <>
                     <LoaderCircle className="animate-spin" size={18} />
@@ -235,7 +229,7 @@ export default function AuthPage({ mode }) {
 
             <p className="mt-6 text-center text-sm text-white/50">
               {isSignup ? "Already have an account?" : "New to ALAVACOUS?"}{" "}
-              <Link className="font-semibold text-white hover:text-mint" to={isSignup ? "/login" : "/signup"}>
+              <Link className="font-semibold text-white hover:text-white/78" to={isSignup ? "/login" : "/signup"}>
                 {isSignup ? "Log in" : "Create account"}
               </Link>
             </p>

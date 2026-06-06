@@ -74,9 +74,8 @@ export default function ProjectsPage() {
   }
 
   return (
-    <main className="page-shell page-reveal py-6 sm:py-10">
-      <section className="panel-soft glass-reflect mb-6 overflow-hidden p-5 sm:p-6">
-        <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
+    <main className="page-shell page-reveal py-4 sm:py-6">
+      <section className="internal-page-header">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="label text-mint">Project discovery</p>
@@ -85,7 +84,7 @@ export default function ProjectsPage() {
               Search projects by title, description, type, and required skills.
             </p>
           </div>
-          <div className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-3 text-sm text-white/54">
+          <div className="rounded-lg border border-line bg-white/[0.025] px-3.5 py-3 text-sm text-white/50">
             <strong className="text-white">{filteredProjects.length}</strong> visible / {activeProjects.length} active
           </div>
         </div>

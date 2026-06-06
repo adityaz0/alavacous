@@ -367,7 +367,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <main className="page-shell page-reveal py-6 sm:py-10">
+    <main className="page-shell page-reveal py-5 sm:py-8">
       <Link to="/projects" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-white/55 transition hover:text-white">
         <ArrowLeft size={16} />
         Back to projects
@@ -379,18 +379,17 @@ export default function ProjectDetailPage() {
         </Alert>
       ) : null}
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
-        <section className="grid gap-6">
-          <article className="panel-soft glass-reflect overflow-hidden p-5 sm:p-7">
-            <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
-            <div className="mb-5 flex flex-wrap items-center gap-2">
+      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px]">
+        <section className="grid gap-5">
+          <article className="panel-soft overflow-hidden p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
               <StatusBadge status={project.status} />
-              <span className="rounded-full border border-line bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-white/52">{project.type}</span>
+              <span className="rounded-full border border-line bg-white/[0.025] px-2.5 py-1 text-xs font-medium text-white/48">{project.type}</span>
             </div>
-            <h1 className="break-words text-3xl font-bold tracking-[-0.03em] text-white sm:text-4xl lg:text-5xl">{project.title}</h1>
-            <p className="mt-5 max-w-4xl whitespace-pre-line break-words text-base leading-8 text-white/64">{project.description}</p>
+            <h1 className="break-words text-3xl font-bold tracking-[-0.02em] text-white sm:text-4xl">{project.title}</h1>
+            <p className="mt-4 max-w-4xl whitespace-pre-line break-words text-sm leading-7 text-white/58 sm:text-base">{project.description}</p>
 
-            <div className="mt-7 flex min-w-0 items-center gap-3 rounded-lg border border-white/[0.1] bg-white/[0.04] p-3">
+            <div className="mt-5 flex min-w-0 items-center gap-3 rounded-lg border border-line bg-white/[0.02] p-3">
               <Avatar name={project.ownerName} size="md" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">{project.ownerName || "Unknown builder"}</p>
@@ -399,7 +398,7 @@ export default function ProjectDetailPage() {
             </div>
           </article>
 
-          <article className="panel p-5 sm:p-6">
+          <article className="panel p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-white">Required skills</h2>
@@ -414,14 +413,14 @@ export default function ProjectDetailPage() {
                   </span>
                 ))
               ) : (
-                <span className="rounded-full border border-dashed border-white/[0.14] px-3 py-1 text-xs text-white/38">
+                <span className="rounded-full border border-dashed border-line px-3 py-1 text-xs text-white/38">
                   No specific skills listed
                 </span>
               )}
             </div>
           </article>
 
-          <article className="panel p-5 sm:p-6">
+          <article className="panel p-4">
             <h2 className="mb-4 text-xl font-semibold text-white">Project details</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <DetailStat icon={Users} label="Team size" value={project.teamSize || 1} />
@@ -432,8 +431,8 @@ export default function ProjectDetailPage() {
           </article>
         </section>
 
-        <aside className="grid content-start gap-6 lg:sticky lg:top-[145px] lg:self-start">
-          <section className="panel p-5">
+        <aside className="grid content-start gap-5 lg:sticky lg:top-[145px] lg:self-start">
+          <section className="panel p-4">
             <h2 className="font-semibold text-white">{isOwner ? "Owner controls" : "Application"}</h2>
             <p className="mt-1 text-sm leading-6 text-white/44">
               {isOwner ? "Manage this project lifecycle and applicant access." : "Apply with a short, focused note about your fit."}
@@ -441,8 +440,8 @@ export default function ProjectDetailPage() {
 
             {isOwner ? (
               <div className="mt-4 grid gap-4">
-                <div className="rounded-lg border border-cyan/15 bg-cyan/10 p-4">
-                  <p className="text-sm font-semibold text-cyan">You own this project</p>
+                <div className="rounded-lg border border-line bg-white/[0.02] p-3">
+                  <p className="text-sm font-semibold text-white/78">You own this project</p>
                   <p className="mt-2 text-sm leading-6 text-white/54">
                     Applicants are preserved when you close a project. Deleting removes the project and its applications.
                   </p>
@@ -480,11 +479,11 @@ export default function ProjectDetailPage() {
                 </div>
               </div>
             ) : myApplication ? (
-              <div className="mt-4 rounded-lg border border-line bg-white/[0.045] p-4">
+              <div className="mt-4 rounded-lg border border-line bg-white/[0.02] p-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm font-semibold text-white">Your application status</p>
                   {canWithdrawApplication ? (
-                    <span className="inline-flex w-fit items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-3 py-1 text-xs font-semibold text-mint">
+                    <span className="inline-flex w-fit items-center gap-2 rounded-full border border-line bg-white/[0.025] px-3 py-1 text-xs font-semibold text-white/58">
                       <CheckCircle2 size={14} />
                       Applied
                     </span>
@@ -498,7 +497,7 @@ export default function ProjectDetailPage() {
                     variant="secondary"
                     disabled={withdrawing}
                     onClick={() => setWithdrawModalOpen(true)}
-                    className="mt-4 w-full border-red-300/20 bg-red-500/10 text-red-100 hover:border-red-300/35 hover:bg-red-500/15"
+                    className="mt-4 w-full"
                   >
                     <Trash2 size={16} />
                     {withdrawing ? "Withdrawing..." : "Withdraw Application"}
@@ -509,7 +508,7 @@ export default function ProjectDetailPage() {
                 ) : null}
                 {hasAcceptedApplication ? (
                   <>
-                    <p className="mt-4 rounded-lg border border-mint/20 bg-mint/10 px-3 py-2 text-sm leading-6 text-mint">
+                    <p className="mt-4 rounded-lg border border-line bg-white/[0.02] px-3 py-2 text-sm leading-6 text-white/56">
                       You are already part of this project.
                     </p>
                     <Button
@@ -561,7 +560,7 @@ export default function ProjectDetailPage() {
       </section>
 
       {canViewTeamWorkspace ? (
-        <section className="mt-6">
+      <section className="mt-5">
           <TeamSection
             applications={applications}
             currentUserId={user?.uid}
@@ -577,13 +576,13 @@ export default function ProjectDetailPage() {
       ) : null}
 
       {isOwner ? (
-        <section className="mt-8">
+        <section className="mt-7">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-white">Applicants</h2>
               <p className="mt-1 text-sm text-white/42">Review and decide who should join the team.</p>
             </div>
-            <span className="rounded-full border border-line bg-white/[0.045] px-3 py-1 text-sm text-white/52">{applications.length} total</span>
+            <span className="rounded-full border border-line bg-white/[0.025] px-3 py-1 text-sm text-white/50">{applications.length} total</span>
           </div>
           <ApplicationList applications={applications} ownerView onStatusChange={handleStatusChange} />
         </section>
@@ -666,12 +665,12 @@ export default function ProjectDetailPage() {
 
 function DetailStat({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-lg border border-white/[0.1] bg-white/[0.04] p-4">
-      <span className="mb-3 inline-flex rounded-lg border border-cyan/20 bg-cyan/10 p-2 text-cyan">
-        <Icon size={17} />
+    <div className="rounded-lg border border-line bg-white/[0.02] p-3">
+      <span className="mb-3 inline-flex rounded-lg border border-line bg-ink-700 p-1.5 text-white/48">
+        <Icon size={15} />
       </span>
       <strong className="block break-words text-lg font-bold text-white">{value}</strong>
-      <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.14em] text-white/38">{label}</span>
+      <span className="mt-1 block text-xs font-semibold uppercase tracking-[0.08em] text-white/36">{label}</span>
     </div>
   );
 }

@@ -5,20 +5,24 @@ export default {
     extend: {
       colors: {
         ink: {
-          950: "#050608",
-          900: "#090b0f",
-          800: "#10141b",
-          700: "#171c25",
+          950: "#09090B",
+          900: "#0c0c0e",
+          800: "#111113",
+          700: "#18181b",
         },
-        glass: "rgba(255,255,255,0.06)",
-        line: "rgba(255,255,255,0.11)",
-        mint: "#6ee7b7",
-        cyan: "#67e8f9",
-        azure: "#7dd3fc",
+        glass: "#111113",
+        line: "rgba(255,255,255,0.03)",
+        mint: "#a1a1aa",
+        cyan: "#fafafa",
+        azure: "#d4d4d8",
         amber: "#f8d66d",
       },
       opacity: {
+        12: "0.12",
+        14: "0.14",
         15: "0.15",
+        16: "0.16",
+        18: "0.18",
         35: "0.35",
         42: "0.42",
         45: "0.45",
@@ -35,16 +39,17 @@ export default {
         68: "0.68",
         72: "0.72",
         78: "0.78",
+        86: "0.86",
       },
       boxShadow: {
-        glow: "0 26px 100px rgba(103, 232, 249, 0.18)",
-        panel: "0 34px 110px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
-        auth: "0 42px 140px rgba(0, 0, 0, 0.58), 0 0 110px rgba(103, 232, 249, 0.11)",
+        glow: "none",
+        panel: "none",
+        auth: "none",
       },
       fontFamily: {
         sans: [
-          "Space Grotesk",
           "Geist",
+          "Inter",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -54,9 +59,9 @@ export default {
         ],
       },
       animation: {
-        float: "float 8s ease-in-out infinite",
-        shimmer: "shimmer 4s linear infinite",
-        rise: "rise 0.6s ease both",
+        float: "none",
+        shimmer: "none",
+        rise: "none",
       },
       keyframes: {
         float: {

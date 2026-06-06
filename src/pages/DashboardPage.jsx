@@ -102,10 +102,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="page-shell page-reveal py-6 sm:py-10">
-      <section className="panel-soft glass-reflect mb-6 overflow-hidden p-5 sm:p-6">
-        <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan/55 to-transparent" aria-hidden="true" />
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    <main className="page-shell page-reveal py-4 sm:py-6">
+      <section className="internal-page-header">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <p className="label text-mint">Dashboard</p>
             <h1 className="mt-2 text-3xl font-bold tracking-[-0.02em] text-white sm:text-4xl">Your collaboration cockpit</h1>
@@ -134,7 +133,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="mb-8 grid min-w-0 gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <article className="panel interactive-panel overflow-hidden p-5">
+        <article className="panel interactive-panel overflow-hidden p-4">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-4">
               <Avatar name={profile?.fullName || user.displayName} email={user.email} size="lg" />
@@ -154,7 +153,7 @@ export default function DashboardPage() {
           </p>
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/[0.08]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-cyan to-mint shadow-[0_0_24px_rgba(103,232,249,0.28)]"
+              className="h-full rounded-full bg-white/70 transition-[width] duration-150"
               style={{ width: `${profileCompletion}%` }}
             />
           </div>
@@ -166,21 +165,21 @@ export default function DashboardPage() {
                 </span>
               ))
             ) : (
-              <span className="rounded-full border border-dashed border-white/[0.14] px-3 py-1 text-xs text-white/38">
+              <span className="rounded-full border border-dashed border-line px-3 py-1 text-xs text-white/38">
                 Add skills to sharpen your profile
               </span>
             )}
           </div>
         </article>
 
-        <article className="panel interactive-panel overflow-hidden p-5">
+        <article className="panel interactive-panel overflow-hidden p-4">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-white">Workspace signal</h2>
               <p className="mt-1 text-sm text-white/44">A quick read on your current collaboration activity.</p>
             </div>
-            <span className="rounded-lg border border-cyan/20 bg-cyan/10 p-2 text-cyan">
-              <ArrowUpRight size={18} />
+            <span className="rounded-lg border border-line bg-white/[0.025] p-2 text-white/48">
+              <ArrowUpRight size={16} />
             </span>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -195,8 +194,8 @@ export default function DashboardPage() {
         <article className="scroll-mt-24" id="active-chats">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-white">Active Chats</h2>
-              <p className="mt-1 text-sm text-white/42">Rooms created after accepted applications.</p>
+              <h2 className="text-xl font-semibold text-white">Team Activity</h2>
+              <p className="mt-1 text-sm text-white/42">Active rooms created after accepted applications.</p>
             </div>
             <Button as="link" to="/chats" variant="secondary" className="w-full sm:w-auto">
               Open Chats
@@ -221,7 +220,7 @@ export default function DashboardPage() {
         <article className="scroll-mt-24" id="recent-notifications">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-white">Recent Notifications</h2>
+              <h2 className="text-xl font-semibold text-white">Notifications</h2>
               <p className="mt-1 text-sm text-white/42">Application decisions and chat activity.</p>
             </div>
             <Button as="link" to="/notifications" variant="secondary" className="w-full sm:w-auto">
@@ -320,7 +319,7 @@ export default function DashboardPage() {
 
       <section className="mb-10 scroll-mt-24" id="applications-sent">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-white">Projects I Applied To</h2>
+            <h2 className="text-xl font-semibold text-white">My Applications</h2>
           <p className="mt-1 text-sm text-white/42">Teams you have asked to join.</p>
         </div>
         <ApplicationList
@@ -354,22 +353,21 @@ export default function DashboardPage() {
 function Metric({ icon: Icon, label, value, detail, to, onClick }) {
   const content = (
     <>
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/28 to-transparent" aria-hidden="true" />
-      <div className="mb-4 flex items-center justify-between">
-        <span className="rounded-lg border border-cyan/20 bg-cyan/10 p-2 text-cyan shadow-[0_0_26px_rgba(103,232,249,0.08)]">
-          <Icon size={18} />
+      <div className="mb-3 flex items-center justify-between">
+        <span className="rounded-lg border border-line bg-white/[0.025] p-1.5 text-white/52">
+          <Icon size={16} />
         </span>
-        <span className="rounded-full border border-white/[0.1] bg-white/[0.04] p-1.5 text-white/38 transition group-hover:border-cyan/25 group-hover:text-cyan">
+        <span className="rounded-full border border-line bg-white/[0.025] p-1.5 text-white/34 transition group-hover:border-white/10 group-hover:text-white/70">
           <ArrowUpRight size={14} />
         </span>
       </div>
-      <strong className="block text-3xl font-black tracking-[-0.02em] text-white">{value}</strong>
-      <span className="mt-1 block text-sm text-white/62">{label}</span>
-      <span className="mt-2 block text-xs text-white/34">{detail}</span>
+      <strong className="block text-4xl font-black tracking-[-0.03em] text-white">{value}</strong>
+      <span className="mt-1 block text-sm font-medium text-white/52">{label}</span>
+      <span className="mt-1 block text-xs text-white/32">{detail}</span>
     </>
   );
 
-  const classes = "panel interactive-panel group relative min-w-0 overflow-hidden p-4 text-left cursor-pointer";
+  const classes = "panel interactive-panel group relative min-w-0 overflow-hidden p-3.5 text-left cursor-pointer";
 
   if (to) {
     return (
@@ -390,10 +388,10 @@ function Signal({ label, value, onClick }) {
   return (
     <button
       type="button"
-      className="group rounded-lg border border-white/[0.1] bg-white/[0.045] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan/25 hover:bg-cyan/10"
+      className="group rounded-2xl border border-line bg-ink-700 p-3.5 text-left transition duration-150 hover:-translate-y-px hover:border-white/[0.08] hover:bg-white/[0.025]"
       onClick={onClick}
     >
-      <span className="mb-2 inline-flex rounded-full border border-white/[0.08] bg-white/[0.04] p-1 text-white/34 transition group-hover:border-cyan/25 group-hover:text-cyan">
+      <span className="mb-2 inline-flex rounded-full border border-white/[0.08] bg-white/[0.04] p-1 text-white/34 transition group-hover:border-white/18 group-hover:text-white">
         <ArrowUpRight size={13} />
       </span>
       <strong className="block text-2xl font-black text-white">{value}</strong>
@@ -408,19 +406,18 @@ function ChatPreview({ chat, currentUserId }) {
 
   return (
     <Link to={`/chats/${chat.id}`} className="panel interactive-panel group overflow-hidden p-4">
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan/45 to-transparent" aria-hidden="true" />
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="mb-3 inline-flex rounded-lg border border-cyan/20 bg-cyan/10 p-2 text-cyan">
-            <MessageCircle size={17} />
+          <div className="mb-3 inline-flex rounded-lg border border-line bg-white/[0.025] p-1.5 text-white/52">
+            <MessageCircle size={15} />
           </div>
-          <h3 className="truncate text-base font-semibold text-white transition group-hover:text-cyan">{chat.projectTitle}</h3>
+          <h3 className="truncate text-base font-semibold text-white transition group-hover:text-white">{chat.projectTitle}</h3>
           <p className="mt-1 truncate text-sm text-white/42">with {peerName}</p>
           <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/52">
             {chat.lastMessage || "Chat room ready. Send the first project update."}
           </p>
         </div>
-        <ArrowUpRight className="shrink-0 text-white/36 transition group-hover:translate-x-0.5 group-hover:text-cyan" size={18} />
+        <ArrowUpRight className="shrink-0 text-white/36 transition group-hover:translate-x-0.5 group-hover:text-white" size={18} />
       </div>
     </Link>
   );
@@ -430,14 +427,14 @@ function NotificationPreview({ notification }) {
   return (
     <Link to={notification.link || "/notifications"} className="panel interactive-panel group overflow-hidden p-4">
       <div className="flex items-start gap-3">
-        <span className="rounded-lg border border-cyan/20 bg-cyan/10 p-2 text-cyan">
-          <Bell size={16} />
+        <span className="rounded-lg border border-line bg-white/[0.025] p-1.5 text-white/52">
+          <Bell size={15} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="break-words text-sm font-semibold text-white transition group-hover:text-cyan">{notification.title}</h3>
+            <h3 className="break-words text-sm font-semibold text-white transition group-hover:text-white">{notification.title}</h3>
             {!notification.read ? (
-              <span className="rounded-full border border-mint/25 bg-mint/10 px-2 py-0.5 text-[11px] font-semibold text-mint">
+              <span className="rounded-full border border-line bg-white/[0.025] px-2 py-0.5 text-[11px] font-semibold text-white/54">
                 New
               </span>
             ) : null}
@@ -454,14 +451,13 @@ function JoinedProjectCard({ application }) {
   const chatId = application.chatId || getProjectChatId(application.projectId, application.applicantId);
 
   return (
-    <article className="panel interactive-panel overflow-hidden p-5">
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-mint/45 to-transparent" aria-hidden="true" />
+    <article className="panel interactive-panel overflow-hidden p-4">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="label text-mint">Joined team</p>
           <h3 className="mt-2 line-clamp-2 break-words text-lg font-semibold text-white">{application.projectTitle}</h3>
         </div>
-        <CheckCircle className="shrink-0 text-mint" size={20} />
+        <CheckCircle className="shrink-0 text-white/58" size={20} />
       </div>
       <StatusBadge status={application.status} />
       <p className="mt-4 text-sm leading-6 text-white/50">
