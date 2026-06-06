@@ -12,6 +12,7 @@ export const projectStatuses = ["Open", "In Progress", "Closed"];
 export const applicationStatuses = ["Pending", "Accepted", "Rejected"];
 
 export const experienceLevels = ["Beginner", "Intermediate", "Advanced", "Professional"];
+export const availabilityStatuses = ["Open to teams", "Busy", "Freelance only", "Exploring ideas"];
 
 export const allSkills = [
   "React",

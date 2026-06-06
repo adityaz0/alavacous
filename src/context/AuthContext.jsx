@@ -9,7 +9,7 @@ import {
 } from "firebase/auth";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { auth, firebaseConfigured } from "../firebase/config.js";
-import { createUserProfile } from "../services/firestore.js";
+import { createUserProfile, setUserPresence } from "../services/firestore.js";
 
 const AuthContext = createContext(null);
 
@@ -46,6 +46,31 @@ export function AuthProvider({ children }) {
     );
   }, []);
 
+  useEffect(() => {
+    if (!user) return undefined;
+
+    setUserPresence(user.uid, true).catch(() => {});
+
+    function markOnline() {
+      setUserPresence(user.uid, true).catch(() => {});
+    }
+
+    function markOffline() {
+      setUserPresence(user.uid, false).catch(() => {});
+    }
+
+    const interval = window.setInterval(markOnline, 60_000);
+    window.addEventListener("focus", markOnline);
+    window.addEventListener("beforeunload", markOffline);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", markOnline);
+      window.removeEventListener("beforeunload", markOffline);
+      markOffline();
+    };
+  }, [user]);
+
   async function signup({ name, email, password }) {
     requireFirebase();
     const credential = await createUserWithEmailAndPassword(auth, email, password);
@@ -61,6 +86,7 @@ export function AuthProvider({ children }) {
         skills: [],
         roleTitle: "",
         experienceLevel: "Beginner",
+        availability: "Open to teams",
         location: "",
         portfolioUrl: "",
         githubUrl: "",

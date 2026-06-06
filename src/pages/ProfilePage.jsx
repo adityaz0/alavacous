@@ -10,7 +10,7 @@ import LoadingState from "../components/ui/LoadingState.jsx";
 import { useToast } from "../components/ui/ToastProvider.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getUserProfile, updateUserProfile } from "../services/firestore.js";
-import { experienceLevels } from "../utils/constants.js";
+import { availabilityStatuses, experienceLevels } from "../utils/constants.js";
 import { getServiceErrorMessage, isValidUrl } from "../utils/messages.js";
 
 const initialProfile = {
@@ -20,6 +20,7 @@ const initialProfile = {
   skills: [],
   roleTitle: "",
   experienceLevel: "Beginner",
+  availability: "Open to teams",
   location: "",
   portfolioUrl: "",
   githubUrl: "",
@@ -52,6 +53,7 @@ export default function ProfilePage() {
           skills: savedProfile?.skills || [],
           roleTitle: savedProfile?.roleTitle || "",
           experienceLevel: savedProfile?.experienceLevel || "Beginner",
+          availability: savedProfile?.availability || "Open to teams",
           location: savedProfile?.location || "",
           portfolioUrl: savedProfile?.portfolioUrl || "",
           githubUrl: savedProfile?.githubUrl || "",
@@ -80,6 +82,7 @@ export default function ProfilePage() {
     { label: "Role", done: profile.roleTitle.trim().length >= 2 },
     { label: "Bio", done: profile.bio.trim().length >= 20 },
     { label: "Skills", done: profile.skills.length > 0 },
+    { label: "Availability", done: Boolean(profile.availability) },
     { label: "Location", done: Boolean(profile.location.trim()) },
     { label: "Links", done: [profile.portfolioUrl, profile.githubUrl, profile.linkedinUrl].some((value) => value.trim()) },
   ];
@@ -133,6 +136,7 @@ export default function ProfilePage() {
         username: profile.username.trim(),
         bio: profile.bio.trim(),
         roleTitle: profile.roleTitle.trim(),
+        availability: profile.availability,
         location: profile.location.trim(),
         portfolioUrl: profile.portfolioUrl.trim(),
         githubUrl: profile.githubUrl.trim(),
@@ -167,6 +171,9 @@ export default function ProfilePage() {
                 <span>@{profile.username || "username"}</span>
                 <span className="rounded-full border border-white/[0.1] bg-white/[0.045] px-2.5 py-1 text-xs font-semibold text-white/56">
                   {profile.roleTitle || profile.experienceLevel}
+                </span>
+                <span className="rounded-full border border-mint/20 bg-mint/10 px-2.5 py-1 text-xs font-semibold text-mint">
+                  {profile.availability}
                 </span>
                 {profile.location ? (
                   <span className="inline-flex items-center gap-1.5">
@@ -243,6 +250,12 @@ export default function ProfilePage() {
             <Field label="Experience level">
               <SelectMenu label="Experience level" value={profile.experienceLevel} onChange={(value) => updateField("experienceLevel", value)} options={experienceLevels} />
             </Field>
+            <Field label="Availability">
+              <SelectMenu label="Availability" value={profile.availability} onChange={(value) => updateField("availability", value)} options={availabilityStatuses} />
+            </Field>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Location">
               <input className="input" value={profile.location} onChange={(event) => updateField("location", event.target.value)} placeholder="Your city" />
             </Field>
@@ -266,6 +279,7 @@ export default function ProfilePage() {
                 <p className="mt-1 truncate text-xs font-semibold uppercase tracking-[0.14em] text-white/34">
                   {profile.roleTitle || profile.experienceLevel}
                 </p>
+                <p className="mt-1 text-xs text-mint">{profile.availability}</p>
               </div>
             </div>
             <p className={`mt-5 text-sm leading-6 ${profile.bio ? "text-white/62" : "text-white/38"}`}>

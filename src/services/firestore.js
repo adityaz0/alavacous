@@ -11,6 +11,7 @@ import {
   runTransaction,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
   writeBatch,
 } from "firebase/firestore";
@@ -104,6 +105,19 @@ export async function getUserProfile(uid) {
   return snapshot.exists() ? withId(snapshot) : null;
 }
 
+export function listenUserProfile(uid, onNext, onError) {
+  if (!uid || !firebaseConfigured) {
+    onNext(null);
+    return () => {};
+  }
+
+  return onSnapshot(
+    doc(db, "users", uid),
+    (snapshot) => onNext(snapshot.exists() ? withId(snapshot) : null),
+    onError
+  );
+}
+
 export async function updateUserProfile(uid, data) {
   requireFirestore();
   await setDoc(
@@ -112,6 +126,19 @@ export async function updateUserProfile(uid, data) {
       ...data,
       uid,
       updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+export async function setUserPresence(uid, online) {
+  if (!uid || !firebaseConfigured) return;
+
+  await setDoc(
+    doc(db, "users", uid),
+    {
+      online: Boolean(online),
+      lastActiveAt: serverTimestamp(),
     },
     { merge: true }
   );
@@ -700,6 +727,31 @@ export function listenChatMessages(chatId, onNext, onError) {
     (snapshot) => onNext(sortOldest(snapshot.docs.map(withId))),
     onError
   );
+}
+
+export async function setChatTyping(chatId, userId, name, typing) {
+  requireFirestore();
+
+  if (!chatId || !userId) return;
+
+  await updateDoc(doc(db, "chats", chatId), {
+    [`typing.${userId}`]: typing
+      ? {
+          name: name || "Builder",
+          updatedAt: serverTimestamp(),
+        }
+      : null,
+  });
+}
+
+export async function markChatRead(chatId, userId) {
+  requireFirestore();
+
+  if (!chatId || !userId) return;
+
+  await updateDoc(doc(db, "chats", chatId), {
+    [`readReceipts.${userId}`]: serverTimestamp(),
+  });
 }
 
 export async function sendChatMessage(chatId, sender, text) {

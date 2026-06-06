@@ -80,11 +80,11 @@ export default function AppShell() {
       <div className="app-ambient" aria-hidden="true" />
       <header className="app-header sticky top-0 z-40 border-b border-white/[0.09] bg-ink-950/72 shadow-[0_1px_0_rgba(255,255,255,0.04),0_18px_60px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
         <div className="page-shell flex h-16 items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
+          <Link to="/" className="flex min-w-0 items-center gap-3" onClick={() => setOpen(false)}>
             <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/20 bg-white text-sm font-black text-ink-950 shadow-[0_0_38px_rgba(103,232,249,0.22)]">
               A
             </span>
-            <span className="brand-wordmark text-xs font-black tracking-[0.2em] sm:text-sm sm:tracking-[0.24em]">ALAVACOUS</span>
+            <span className="brand-wordmark truncate text-xs font-black tracking-[0.2em] sm:text-sm sm:tracking-[0.24em]">ALAVACOUS</span>
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">

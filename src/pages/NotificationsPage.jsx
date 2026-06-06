@@ -161,7 +161,7 @@ function NotificationCard({ notification, marking, onMarkRead }) {
 
         <div className="grid gap-2 sm:grid-cols-2 lg:w-56 lg:grid-cols-1">
           {notification.link ? (
-            <Button as="link" to={notification.link} variant="secondary">
+            <Button as="link" to={notification.link} variant="secondary" onClick={() => !notification.read && onMarkRead()}>
               <ArrowUpRight size={16} />
               Open
             </Button>

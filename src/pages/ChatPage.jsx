@@ -1,4 +1,4 @@
-import { ArrowLeft, MessageCircle, Send, Users } from "lucide-react";
+import { ArrowLeft, CheckCheck, MessageCircle, Send, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Alert from "../components/ui/Alert.jsx";
@@ -12,11 +12,14 @@ import {
   getUserProfile,
   listenChatMessages,
   listenNotifications,
+  listenUserProfile,
   listenUserChats,
+  markChatRead,
   markNotificationRead,
   sendChatMessage,
+  setChatTyping,
 } from "../services/firestore.js";
-import { formatDateTime, formatRelativeTime } from "../utils/format.js";
+import { formatDateTime, formatRelativeTime, toTimestampNumber } from "../utils/format.js";
 import { getServiceErrorMessage } from "../utils/messages.js";
 
 export default function ChatPage() {
@@ -26,6 +29,7 @@ export default function ChatPage() {
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [peerProfile, setPeerProfile] = useState(null);
   const [chatLoading, setChatLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(Boolean(chatId));
   const [error, setError] = useState("");
@@ -33,10 +37,18 @@ export default function ChatPage() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
+  const typingTimerRef = useRef(null);
   const navigate = useNavigate();
   const toast = useToast();
 
   const selectedChat = useMemo(() => chats.find((chat) => chat.id === chatId) || null, [chatId, chats]);
+  const selectedPeerId = useMemo(
+    () => selectedChat?.members?.find((memberId) => memberId !== user.uid) || selectedChat?.applicantId || "",
+    [selectedChat, user.uid]
+  );
+  const selectedPeerOnline = Boolean(
+    peerProfile?.online && Date.now() - toTimestampNumber(peerProfile.lastActiveAt) < 2 * 60 * 1000
+  );
   const unreadByChat = useMemo(
     () =>
       notifications
@@ -50,6 +62,16 @@ export default function ChatPage() {
         }, {}),
     [notifications]
   );
+  const typingUsers = useMemo(() => {
+    if (!selectedChat?.typing) return [];
+
+    return Object.entries(selectedChat.typing)
+      .filter(([memberId, typing]) => {
+        if (memberId === user.uid || !typing) return false;
+        return Date.now() - toTimestampNumber(typing.updatedAt) < 6_000;
+      })
+      .map(([, typing]) => typing.name || "Builder");
+  }, [selectedChat, user.uid]);
 
   useEffect(() => {
     let mounted = true;
@@ -87,6 +109,18 @@ export default function ChatPage() {
   }, [user.uid]);
 
   useEffect(() => {
+    setPeerProfile(null);
+
+    if (!selectedPeerId) return undefined;
+
+    return listenUserProfile(
+      selectedPeerId,
+      setPeerProfile,
+      () => setPeerProfile(null)
+    );
+  }, [selectedPeerId]);
+
+  useEffect(() => {
     if (!chatId) {
       setMessages([]);
       setMessagesLoading(false);
@@ -114,7 +148,36 @@ export default function ChatPage() {
   }, [chatId, messages.length, messagesLoading]);
 
   useEffect(() => {
+    if (!chatId || !selectedChat?.members?.includes(user.uid)) return undefined;
+
+    const senderName = profile?.fullName || user.displayName || user.email || "Builder";
+    window.clearTimeout(typingTimerRef.current);
+
+    if (!draft.trim()) {
+      setChatTyping(chatId, user.uid, senderName, false).catch(() => {});
+      return undefined;
+    }
+
+    setChatTyping(chatId, user.uid, senderName, true).catch(() => {});
+    typingTimerRef.current = window.setTimeout(() => {
+      setChatTyping(chatId, user.uid, senderName, false).catch(() => {});
+    }, 2500);
+
+    return () => window.clearTimeout(typingTimerRef.current);
+  }, [chatId, draft, profile?.fullName, selectedChat, user.displayName, user.email, user.uid]);
+
+  useEffect(() => {
+    return () => {
+      if (chatId) {
+        setChatTyping(chatId, user.uid, "", false).catch(() => {});
+      }
+    };
+  }, [chatId, user.uid]);
+
+  useEffect(() => {
     if (!chatId) return;
+
+    markChatRead(chatId, user.uid).catch(() => {});
 
     const unreadChatNotifications = notifications.filter(
       (notification) => !notification.read && notification.type === "chat-message" && notification.link === `/chats/${chatId}`
@@ -146,6 +209,7 @@ export default function ChatPage() {
         cleanDraft
       );
       setDraft("");
+      setChatTyping(chatId, user.uid, "", false).catch(() => {});
     } catch (err) {
       const message = getServiceErrorMessage(err, "Could not send message.");
       setMessageError(message);
@@ -185,7 +249,7 @@ export default function ChatPage() {
         />
       ) : (
         <section className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
-          <aside className="panel grid max-h-[72vh] content-start overflow-hidden p-4">
+          <aside className="panel grid max-h-[42svh] content-start overflow-hidden p-4 lg:max-h-[72vh]">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-white/48">Active chats</h2>
               <span className="rounded-full border border-cyan/20 bg-cyan/10 px-2.5 py-1 text-xs font-semibold text-cyan">
@@ -206,7 +270,7 @@ export default function ChatPage() {
             </div>
           </aside>
 
-          <section className="panel grid min-h-[520px] overflow-hidden">
+          <section className="panel grid min-h-[60svh] overflow-hidden lg:min-h-[520px]">
             {chatId && selectedChat ? (
               <>
                 <div className="border-b border-line p-4 sm:p-5">
@@ -221,6 +285,10 @@ export default function ChatPage() {
                         <Users size={14} />
                         {selectedChat.members?.length || 0} members
                       </p>
+                      <p className="mt-1 inline-flex items-center gap-2 text-xs text-white/38">
+                        <span className={`h-2 w-2 rounded-full ${selectedPeerOnline ? "bg-mint" : "bg-white/28"}`} />
+                        {selectedPeerOnline ? "Online" : `Offline${peerProfile?.lastActiveAt ? ` - ${formatRelativeTime(peerProfile.lastActiveAt)}` : ""}`}
+                      </p>
                     </div>
                     <Button as="link" to={`/projects/${selectedChat.projectId}`} variant="secondary" className="w-full sm:w-auto">
                       View Project
@@ -228,13 +296,23 @@ export default function ChatPage() {
                   </div>
                 </div>
 
-                <div className="grid max-h-[56vh] min-h-[320px] content-start gap-3 overflow-y-auto p-4 sm:p-5">
+                <div className="chat-scroll-area grid max-h-[52svh] min-h-[280px] content-start gap-3 overflow-y-auto p-4 sm:p-5 lg:max-h-[56vh] lg:min-h-[320px]">
                   {messageError ? <Alert variant="error">{messageError}</Alert> : null}
+                  {typingUsers.length ? (
+                    <p className="rounded-lg border border-cyan/15 bg-cyan/10 px-3 py-2 text-xs font-semibold text-cyan">
+                      {typingUsers.slice(0, 2).join(", ")} {typingUsers.length > 1 ? "are" : "is"} typing...
+                    </p>
+                  ) : null}
                   {messagesLoading ? (
                     <LoadingState label="Loading messages" />
                   ) : messages.length ? (
                     messages.map((message) => (
-                      <MessageBubble currentUserId={user.uid} message={message} key={message.id} />
+                      <MessageBubble
+                        currentUserId={user.uid}
+                        message={message}
+                        key={message.id}
+                        peerReadAt={selectedChat.readReceipts?.[selectedPeerId]}
+                      />
                     ))
                   ) : (
                     <div className="flex min-h-[240px] flex-col items-center justify-center text-center">
@@ -259,7 +337,7 @@ export default function ChatPage() {
                       placeholder="Send a focused project update..."
                       value={draft}
                     />
-                    <Button type="submit" disabled={sending || !draft.trim()} className="sm:self-end">
+                    <Button type="submit" disabled={sending || !draft.trim()} className="w-full sm:w-auto sm:self-end">
                       <Send size={16} />
                       {sending ? "Sending..." : "Send"}
                     </Button>
@@ -318,8 +396,9 @@ function ChatListItem({ chat, active, currentUserId, onClick, unreadCount = 0 })
   );
 }
 
-function MessageBubble({ message, currentUserId }) {
+function MessageBubble({ message, currentUserId, peerReadAt }) {
   const mine = message.senderId === currentUserId;
+  const seen = mine && toTimestampNumber(peerReadAt) >= toTimestampNumber(message.createdAt);
 
   return (
     <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
@@ -337,6 +416,12 @@ function MessageBubble({ message, currentUserId }) {
           </span>
         </div>
         <p className="whitespace-pre-wrap break-words text-sm leading-6 text-white/72">{message.text}</p>
+        {mine ? (
+          <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/28">
+            <CheckCheck size={13} />
+            {seen ? "Seen" : "Delivered"}
+          </p>
+        ) : null}
       </div>
     </div>
   );
