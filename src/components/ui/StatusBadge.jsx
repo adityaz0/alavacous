@@ -5,6 +5,8 @@ const styles = {
   Pending: "border-amber/40 bg-amber/10 text-amber shadow-[0_0_28px_rgba(248,214,109,0.08)]",
   Accepted: "border-mint/35 bg-mint/10 text-mint shadow-[0_0_28px_rgba(110,231,183,0.1)]",
   Rejected: "border-red-400/35 bg-red-500/10 text-red-200 shadow-[0_0_28px_rgba(248,113,113,0.1)]",
+  Removed: "border-red-400/30 bg-red-500/10 text-red-100 shadow-[0_0_28px_rgba(248,113,113,0.08)]",
+  Left: "border-white/15 bg-white/[0.07] text-white/55",
 };
 
 const dots = {
@@ -14,6 +16,8 @@ const dots = {
   Pending: "bg-amber",
   Accepted: "bg-mint",
   Rejected: "bg-red-300",
+  Removed: "bg-red-300",
+  Left: "bg-white/45",
 };
 
 export default function StatusBadge({ status }) {

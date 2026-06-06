@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, CheckCircle2, Edit3, ExternalLink, Layers, LockKeyhole, RotateCcw, Send, Trash2, UserCheck, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle2, Edit3, ExternalLink, Layers, LockKeyhole, LogOut, RotateCcw, Send, Trash2, UserCheck, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ApplicationList from "../components/applications/ApplicationList.jsx";
@@ -19,7 +19,9 @@ import {
   getApplicationForProject,
   getProject,
   getUserProfile,
+  leaveProject,
   listApplicationsByProject,
+  removeProjectMember,
   reopenProject,
   updateApplicationStatus,
   withdrawApplication,
@@ -56,6 +58,10 @@ export default function ProjectDetailPage() {
   const [reopenModalOpen, setReopenModalOpen] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState("");
+  const [memberToRemove, setMemberToRemove] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -175,7 +181,7 @@ export default function ProjectDetailPage() {
         applicantId: user.uid,
         applicantName: profile?.fullName || user.displayName || user.email,
         applicantEmail: user.email,
-        applicantRole: profile?.experienceLevel || "Builder",
+        applicantRole: profile?.roleTitle || profile?.experienceLevel || "Builder",
         applicantSkills: profile?.skills || [],
         message: cleanMessage,
       });
@@ -234,6 +240,54 @@ export default function ProjectDetailPage() {
       toast.error(message);
     } finally {
       setWithdrawing(false);
+    }
+  }
+
+  async function handleLeaveProject() {
+    if (!user || !project || !myApplication) return;
+
+    if (!hasAcceptedApplication) {
+      toast.info("Only accepted members can leave a project.");
+      return;
+    }
+
+    setLeaving(true);
+    setSubmitError("");
+
+    try {
+      await leaveProject({ projectId: project.id, applicantId: user.uid });
+      setMyApplication((current) => (current ? { ...current, status: "Left" } : current));
+      setApplications([]);
+      setLeaveModalOpen(false);
+      toast.success("You left this project.");
+    } catch (err) {
+      const message = getServiceErrorMessage(err, "Could not leave project.");
+      setSubmitError(message);
+      toast.error(message);
+    } finally {
+      setLeaving(false);
+    }
+  }
+
+  async function handleRemoveMember() {
+    if (!isOwner || !user || !memberToRemove) return;
+
+    setRemovingMemberId(memberToRemove.id);
+
+    try {
+      await removeProjectMember({ applicationId: memberToRemove.id, ownerId: user.uid });
+      setApplications((current) =>
+        current.map((application) =>
+          application.id === memberToRemove.id ? { ...application, status: "Removed" } : application
+        )
+      );
+      toast.success(`${memberToRemove.applicantName || "Member"} removed from the project.`);
+      setMemberToRemove(null);
+    } catch (err) {
+      const message = getServiceErrorMessage(err, "Could not remove member.");
+      toast.error(message);
+    } finally {
+      setRemovingMemberId("");
     }
   }
 
@@ -439,7 +493,6 @@ export default function ProjectDetailPage() {
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <StatusBadge status={myApplication.status} />
                 </div>
-                <div className="mt-3 text-xs text-cyan-300">DEBUG WITHDRAW RENDER PATH</div>
                 {normalizeStatus(myApplication?.status) === "pending" ? (
                   <Button
                     variant="secondary"
@@ -455,9 +508,20 @@ export default function ProjectDetailPage() {
                   <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-6 text-white/48">{myApplication.message}</p>
                 ) : null}
                 {hasAcceptedApplication ? (
-                  <p className="mt-4 rounded-lg border border-mint/20 bg-mint/10 px-3 py-2 text-sm leading-6 text-mint">
-                    You are already part of this project.
-                  </p>
+                  <>
+                    <p className="mt-4 rounded-lg border border-mint/20 bg-mint/10 px-3 py-2 text-sm leading-6 text-mint">
+                      You are already part of this project.
+                    </p>
+                    <Button
+                      variant="secondary"
+                      disabled={leaving}
+                      onClick={() => setLeaveModalOpen(true)}
+                      className="mt-4 w-full border-amber/30 bg-amber/10 text-amber hover:border-amber/45 hover:bg-amber/15"
+                    >
+                      <LogOut size={16} />
+                      {leaving ? "Leaving..." : "Leave Project"}
+                    </Button>
+                  </>
                 ) : null}
                 {submitError ? (
                   <div className="mt-4">
@@ -498,7 +562,17 @@ export default function ProjectDetailPage() {
 
       {canViewTeamWorkspace ? (
         <section className="mt-6">
-          <TeamSection applications={applications} project={project} visible />
+          <TeamSection
+            applications={applications}
+            currentUserId={user?.uid}
+            isOwner={Boolean(isOwner)}
+            leaving={leaving}
+            onLeaveProject={() => setLeaveModalOpen(true)}
+            onRemoveMember={(member) => setMemberToRemove(member)}
+            project={project}
+            removingMemberId={removingMemberId}
+            visible
+          />
         </section>
       ) : null}
 
@@ -549,6 +623,30 @@ export default function ProjectDetailPage() {
         submitting={withdrawing}
         onCancel={() => setWithdrawModalOpen(false)}
         onConfirm={handleWithdrawApplication}
+      />
+
+      <ConfirmModal
+        open={!isOwner && hasAcceptedApplication && leaveModalOpen}
+        title="Leave project?"
+        description="Leaving removes you from the team workspace and revokes your chat access. The project owner will be notified."
+        confirmLabel="Leave Project"
+        submittingLabel="Leaving..."
+        variant="warning"
+        submitting={leaving}
+        onCancel={() => setLeaveModalOpen(false)}
+        onConfirm={handleLeaveProject}
+      />
+
+      <ConfirmModal
+        open={isOwner && Boolean(memberToRemove)}
+        title="Remove member?"
+        description={`Remove ${memberToRemove?.applicantName || "this member"} from the team workspace and revoke their chat access.`}
+        confirmLabel="Remove Member"
+        submittingLabel="Removing..."
+        variant="danger"
+        submitting={Boolean(removingMemberId)}
+        onCancel={() => setMemberToRemove(null)}
+        onConfirm={handleRemoveMember}
       />
 
       <ConfirmModal

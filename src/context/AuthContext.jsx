@@ -59,6 +59,7 @@ export function AuthProvider({ children }) {
         email,
         bio: "",
         skills: [],
+        roleTitle: "",
         experienceLevel: "Beginner",
         location: "",
         portfolioUrl: "",

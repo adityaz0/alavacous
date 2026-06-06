@@ -86,7 +86,7 @@ export default function NotificationsPage() {
             <p className="label text-mint">Activity center</p>
             <h1 className="mt-2 text-3xl font-bold tracking-[-0.02em] text-white sm:text-4xl">Notifications</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/56">
-              Application decisions and chat activity stay visible without adding noisy social feeds.
+              Applications, withdrawals, team changes, and chat activity stay visible without adding noisy social feeds.
             </p>
           </div>
           <Button
@@ -110,7 +110,7 @@ export default function NotificationsPage() {
       {!notifications.length ? (
         <EmptyState
           title="No notifications yet"
-          description="You will see application decisions and chat messages here as your collaborations become active."
+          description="You will see applications, decisions, member changes, and chat messages here as your collaborations become active."
           actionLabel="Open Dashboard"
           actionTo="/dashboard"
         />

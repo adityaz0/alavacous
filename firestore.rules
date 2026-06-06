@@ -132,23 +132,44 @@ service cloud.firestore {
             && isAcceptedProjectMember(resource.data.projectId)
           ));
       allow update: if signedIn()
-        && resource.data.ownerId == request.auth.uid
         && (
           (
-            request.resource.data.diff(resource.data).changedKeys().hasOnly([
-              'status',
-              'chatId',
-              'updatedAt'
-            ])
-            && resource.data.status == 'Pending'
-            && request.resource.data.status in ['Accepted', 'Rejected']
+            resource.data.ownerId == request.auth.uid
+            && (
+              (
+                request.resource.data.diff(resource.data).changedKeys().hasOnly([
+                  'status',
+                  'chatId',
+                  'updatedAt'
+                ])
+                && resource.data.status == 'Pending'
+                && request.resource.data.status in ['Accepted', 'Rejected']
+              )
+              || (
+                request.resource.data.diff(resource.data).changedKeys().hasOnly([
+                  'projectTitle',
+                  'updatedAt'
+                ])
+                && request.resource.data.projectTitle == projectData(resource.data.projectId).title
+              )
+              || (
+                request.resource.data.diff(resource.data).changedKeys().hasOnly([
+                  'status',
+                  'updatedAt'
+                ])
+                && resource.data.status == 'Accepted'
+                && request.resource.data.status == 'Removed'
+              )
+            )
           )
           || (
-            request.resource.data.diff(resource.data).changedKeys().hasOnly([
-              'projectTitle',
+            resource.data.applicantId == request.auth.uid
+            && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+              'status',
               'updatedAt'
             ])
-            && request.resource.data.projectTitle == projectData(resource.data.projectId).title
+            && resource.data.status == 'Accepted'
+            && request.resource.data.status == 'Left'
           )
         );
       allow delete: if signedIn()
@@ -180,11 +201,11 @@ service cloud.firestore {
         && request.resource.data.projectId == resource.data.projectId
         && request.resource.data.ownerId == resource.data.ownerId
         && request.resource.data.applicantId == resource.data.applicantId
-        && request.resource.data.members == resource.data.members
         && request.resource.data.createdAt == resource.data.createdAt
         && (
           (
-            request.auth.uid in resource.data.members
+            request.resource.data.members == resource.data.members
+            && request.auth.uid in resource.data.members
             && request.resource.data.projectTitle == resource.data.projectTitle
             && request.resource.data.diff(resource.data).changedKeys().hasOnly([
               'lastMessage',
@@ -199,6 +220,25 @@ service cloud.firestore {
               'updatedAt'
             ])
             && request.resource.data.projectTitle == projectData(resource.data.projectId).title
+          )
+          || (
+            request.resource.data.diff(resource.data).changedKeys().hasOnly([
+              'members',
+              'updatedAt'
+            ])
+            && request.resource.data.members.size() == 1
+            && request.resource.data.members.hasAll([resource.data.ownerId])
+            && existsAfter(chatApplicationPath(resource.data.projectId, resource.data.applicantId))
+            && (
+              (
+                resource.data.ownerId == request.auth.uid
+                && getAfter(chatApplicationPath(resource.data.projectId, resource.data.applicantId)).data.status == 'Removed'
+              )
+              || (
+                resource.data.applicantId == request.auth.uid
+                && getAfter(chatApplicationPath(resource.data.projectId, resource.data.applicantId)).data.status == 'Left'
+              )
+            )
           )
         );
       allow delete: if signedIn()
@@ -231,6 +271,10 @@ service cloud.firestore {
         && request.resource.data.type in [
           'application-accepted',
           'application-rejected',
+          'application-new',
+          'application-withdrawn',
+          'member-removed',
+          'member-left',
           'chat-message'
         ]
         && request.resource.data.read == false

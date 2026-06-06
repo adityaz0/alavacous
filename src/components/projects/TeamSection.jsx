@@ -1,11 +1,26 @@
-import { CalendarDays, Crown, Users } from "lucide-react";
+import { CalendarDays, Crown, LogOut, Trash2, Users } from "lucide-react";
 import { formatDate } from "../../utils/format.js";
 import Avatar from "../ui/Avatar.jsx";
+import Button from "../ui/Button.jsx";
 
-export default function TeamSection({ project, applications = [], visible }) {
+function normalizeStatus(status) {
+  return String(status || "").trim().toLowerCase();
+}
+
+export default function TeamSection({
+  project,
+  applications = [],
+  visible,
+  isOwner = false,
+  currentUserId = "",
+  removingMemberId = "",
+  leaving = false,
+  onRemoveMember,
+  onLeaveProject,
+}) {
   if (!visible) return null;
 
-  const acceptedMembers = applications.filter((application) => application.status === "Accepted");
+  const acceptedMembers = applications.filter((application) => normalizeStatus(application.status) === "accepted");
   const teamSize = Number(project.teamSize) || 1;
   const joinedCount = Math.min(teamSize, 1 + acceptedMembers.length);
 
@@ -38,6 +53,29 @@ export default function TeamSection({ project, applications = [], visible }) {
             role={member.applicantRole || "Accepted builder"}
             skills={member.applicantSkills || []}
             joinedDate={member.updatedAt || member.createdAt}
+            action={
+              isOwner ? (
+                <Button
+                  variant="danger"
+                  disabled={removingMemberId === member.id}
+                  onClick={() => onRemoveMember?.(member)}
+                  className="mt-4 w-full"
+                >
+                  <Trash2 size={16} />
+                  {removingMemberId === member.id ? "Removing..." : "Remove Member"}
+                </Button>
+              ) : currentUserId === member.applicantId ? (
+                <Button
+                  variant="secondary"
+                  disabled={leaving}
+                  onClick={onLeaveProject}
+                  className="mt-4 w-full border-amber/30 bg-amber/10 text-amber hover:border-amber/45 hover:bg-amber/15"
+                >
+                  <LogOut size={16} />
+                  {leaving ? "Leaving..." : "Leave Project"}
+                </Button>
+              ) : null
+            }
           />
         ))}
       </div>
@@ -45,7 +83,7 @@ export default function TeamSection({ project, applications = [], visible }) {
   );
 }
 
-function TeamCard({ name, role, skills = [], joinedDate, featured = false }) {
+function TeamCard({ name, role, skills = [], joinedDate, featured = false, action = null }) {
   return (
     <div className="interactive-panel rounded-lg border border-white/[0.1] bg-white/[0.045] p-4">
       <div className="flex min-w-0 items-start gap-3">
@@ -77,6 +115,7 @@ function TeamCard({ name, role, skills = [], joinedDate, featured = false }) {
         <CalendarDays size={13} />
         Joined {formatDate(joinedDate)}
       </p>
+      {action}
     </div>
   );
 }

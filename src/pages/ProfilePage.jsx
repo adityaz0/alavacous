@@ -18,6 +18,7 @@ const initialProfile = {
   username: "",
   bio: "",
   skills: [],
+  roleTitle: "",
   experienceLevel: "Beginner",
   location: "",
   portfolioUrl: "",
@@ -49,6 +50,7 @@ export default function ProfilePage() {
           username: savedProfile?.username || "",
           bio: savedProfile?.bio || "",
           skills: savedProfile?.skills || [],
+          roleTitle: savedProfile?.roleTitle || "",
           experienceLevel: savedProfile?.experienceLevel || "Beginner",
           location: savedProfile?.location || "",
           portfolioUrl: savedProfile?.portfolioUrl || "",
@@ -75,6 +77,7 @@ export default function ProfilePage() {
   const completionItems = [
     { label: "Name", done: profile.fullName.trim().length >= 2 },
     { label: "Username", done: profile.username.trim().length >= 3 },
+    { label: "Role", done: profile.roleTitle.trim().length >= 2 },
     { label: "Bio", done: profile.bio.trim().length >= 20 },
     { label: "Skills", done: profile.skills.length > 0 },
     { label: "Location", done: Boolean(profile.location.trim()) },
@@ -129,6 +132,7 @@ export default function ProfilePage() {
         fullName: profile.fullName.trim(),
         username: profile.username.trim(),
         bio: profile.bio.trim(),
+        roleTitle: profile.roleTitle.trim(),
         location: profile.location.trim(),
         portfolioUrl: profile.portfolioUrl.trim(),
         githubUrl: profile.githubUrl.trim(),
@@ -162,7 +166,7 @@ export default function ProfilePage() {
               <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-white/54">
                 <span>@{profile.username || "username"}</span>
                 <span className="rounded-full border border-white/[0.1] bg-white/[0.045] px-2.5 py-1 text-xs font-semibold text-white/56">
-                  {profile.experienceLevel}
+                  {profile.roleTitle || profile.experienceLevel}
                 </span>
                 {profile.location ? (
                   <span className="inline-flex items-center gap-1.5">
@@ -215,6 +219,15 @@ export default function ProfilePage() {
             </Field>
           </div>
 
+          <Field label="Role / title">
+            <input
+              className="input"
+              value={profile.roleTitle}
+              onChange={(event) => updateField("roleTitle", event.target.value)}
+              placeholder="Frontend developer, UI designer, editor..."
+            />
+          </Field>
+
           <Field label="Bio">
             <textarea
               className="input min-h-32 resize-y"
@@ -250,6 +263,9 @@ export default function ProfilePage() {
               <div className="min-w-0">
                 <h3 className="break-words font-semibold text-white">{profile.fullName || "Your name"}</h3>
                 <p className="truncate text-sm text-white/46">@{profile.username || "username"}</p>
+                <p className="mt-1 truncate text-xs font-semibold uppercase tracking-[0.14em] text-white/34">
+                  {profile.roleTitle || profile.experienceLevel}
+                </p>
               </div>
             </div>
             <p className={`mt-5 text-sm leading-6 ${profile.bio ? "text-white/62" : "text-white/38"}`}>
@@ -282,7 +298,18 @@ export default function ProfilePage() {
                     <Icon size={15} className="shrink-0 text-cyan" />
                     <span>{label}</span>
                   </span>
-                  <span className={`truncate text-xs ${value ? "text-mint" : "text-white/34"}`}>{value ? "Added" : "Not added"}</span>
+                  {value ? (
+                    <a
+                      className="truncate text-xs font-semibold text-mint transition hover:text-cyan"
+                      href={value}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Open
+                    </a>
+                  ) : (
+                    <span className="truncate text-xs text-white/34">Not added</span>
+                  )}
                 </div>
               ))}
             </div>

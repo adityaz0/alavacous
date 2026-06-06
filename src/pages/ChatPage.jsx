@@ -11,10 +11,12 @@ import { useAuth } from "../context/AuthContext.jsx";
 import {
   getUserProfile,
   listenChatMessages,
+  listenNotifications,
   listenUserChats,
+  markNotificationRead,
   sendChatMessage,
 } from "../services/firestore.js";
-import { formatDate, formatDateTime } from "../utils/format.js";
+import { formatDateTime, formatRelativeTime } from "../utils/format.js";
 import { getServiceErrorMessage } from "../utils/messages.js";
 
 export default function ChatPage() {
@@ -23,6 +25,7 @@ export default function ChatPage() {
   const [profile, setProfile] = useState(null);
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [chatLoading, setChatLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(Boolean(chatId));
   const [error, setError] = useState("");
@@ -34,6 +37,19 @@ export default function ChatPage() {
   const toast = useToast();
 
   const selectedChat = useMemo(() => chats.find((chat) => chat.id === chatId) || null, [chatId, chats]);
+  const unreadByChat = useMemo(
+    () =>
+      notifications
+        .filter((notification) => !notification.read && notification.type === "chat-message")
+        .reduce((counts, notification) => {
+          const match = String(notification.link || "").match(/\/chats\/([^/?#]+)/);
+          if (match?.[1]) {
+            counts[match[1]] = (counts[match[1]] || 0) + 1;
+          }
+          return counts;
+        }, {}),
+    [notifications]
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -67,6 +83,10 @@ export default function ChatPage() {
   }, [user.uid]);
 
   useEffect(() => {
+    return listenNotifications(user.uid, setNotifications, () => setNotifications([]));
+  }, [user.uid]);
+
+  useEffect(() => {
     if (!chatId) {
       setMessages([]);
       setMessagesLoading(false);
@@ -91,7 +111,19 @@ export default function ChatPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length]);
+  }, [chatId, messages.length, messagesLoading]);
+
+  useEffect(() => {
+    if (!chatId) return;
+
+    const unreadChatNotifications = notifications.filter(
+      (notification) => !notification.read && notification.type === "chat-message" && notification.link === `/chats/${chatId}`
+    );
+
+    if (!unreadChatNotifications.length) return;
+
+    Promise.all(unreadChatNotifications.map((notification) => markNotificationRead(notification.id, user.uid))).catch(() => {});
+  }, [chatId, notifications, user.uid]);
 
   async function handleSend(event) {
     event.preventDefault();
@@ -168,6 +200,7 @@ export default function ChatPage() {
                   currentUserId={user.uid}
                   key={chat.id}
                   onClick={() => navigate(`/chats/${chat.id}`)}
+                  unreadCount={unreadByChat[chat.id] || 0}
                 />
               ))}
             </div>
@@ -251,7 +284,7 @@ export default function ChatPage() {
   );
 }
 
-function ChatListItem({ chat, active, currentUserId, onClick }) {
+function ChatListItem({ chat, active, currentUserId, onClick, unreadCount = 0 }) {
   const peerId = chat.members?.find((memberId) => memberId !== currentUserId);
   const peerName = chat.memberNames?.[peerId] || chat.memberNames?.[chat.applicantId] || "Project chat";
 
@@ -269,12 +302,17 @@ function ChatListItem({ chat, active, currentUserId, onClick }) {
           <p className="truncate text-sm font-semibold text-white">{chat.projectTitle}</p>
           <p className="mt-0.5 truncate text-xs text-white/42">{peerName}</p>
         </div>
+        {unreadCount ? (
+          <span className="rounded-full border border-mint/25 bg-mint/10 px-2 py-0.5 text-[11px] font-bold text-mint">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        ) : null}
       </div>
       <p className="mt-3 line-clamp-2 text-xs leading-5 text-white/42">
         {chat.lastMessage || "Chat room ready. Send the first message."}
       </p>
       <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/28">
-        {formatDate(chat.lastMessageAt || chat.updatedAt || chat.createdAt)}
+        {formatRelativeTime(chat.lastMessageAt || chat.updatedAt || chat.createdAt)}
       </p>
     </button>
   );
@@ -294,7 +332,9 @@ function MessageBubble({ message, currentUserId }) {
       >
         <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
           <span className="font-semibold text-white/78">{message.senderName || "Builder"}</span>
-          <span className="text-white/32">{formatDateTime(message.createdAt)}</span>
+          <span className="text-white/32" title={formatDateTime(message.createdAt)}>
+            {formatRelativeTime(message.createdAt)}
+          </span>
         </div>
         <p className="whitespace-pre-wrap break-words text-sm leading-6 text-white/72">{message.text}</p>
       </div>

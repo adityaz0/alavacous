@@ -80,6 +80,10 @@ function truncateMessage(value, maxLength = 140) {
   return clean.length > maxLength ? `${clean.slice(0, maxLength - 1)}...` : clean;
 }
 
+function normalizeStatus(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
 export async function createUserProfile(uid, data) {
   requireFirestore();
   await setDoc(
@@ -316,6 +320,17 @@ export async function createApplication(data) {
       applicantCount: increment(1),
       updatedAt: serverTimestamp(),
     });
+
+    transaction.set(
+      doc(collection(db, "notifications")),
+      notificationPayload({
+        userId: project.ownerId,
+        type: "application-new",
+        title: "New application received",
+        message: `${data.applicantName || "A builder"} applied to ${project.title || data.projectTitle || "your project"}.`,
+        link: `/projects/${data.projectId}`,
+      })
+    );
   });
 
   return applicationId;
@@ -344,7 +359,7 @@ export async function withdrawApplication({ projectId, applicantId }) {
       throw new Error("Only the applicant can withdraw this application.");
     }
 
-    const applicationStatus = String(application.status || "").trim().toLowerCase();
+    const applicationStatus = normalizeStatus(application.status);
 
     if (applicationStatus === "accepted") {
       throw new Error("You are already part of this project.");
@@ -369,6 +384,152 @@ export async function withdrawApplication({ projectId, applicantId }) {
       applicantCount: Math.max(0, currentApplicantCount - 1),
       updatedAt: serverTimestamp(),
     });
+
+    transaction.set(
+      doc(collection(db, "notifications")),
+      notificationPayload({
+        userId: project.ownerId || application.ownerId,
+        type: "application-withdrawn",
+        title: "Application withdrawn",
+        message: `${application.applicantName || "A builder"} withdrew their application for ${project.title || application.projectTitle || "your project"}.`,
+        link: `/projects/${projectId}`,
+      })
+    );
+  });
+}
+
+export async function removeProjectMember({ applicationId, ownerId }) {
+  requireFirestore();
+
+  if (!applicationId || !ownerId) {
+    throw new Error("Only the project owner can remove team members.");
+  }
+
+  const applicationRef = doc(db, "applications", applicationId);
+
+  await runTransaction(db, async (transaction) => {
+    const applicationSnapshot = await transaction.get(applicationRef);
+
+    if (!applicationSnapshot.exists()) {
+      throw new Error("This application no longer exists.");
+    }
+
+    const application = applicationSnapshot.data();
+
+    if (application.ownerId !== ownerId) {
+      throw new Error("Only the project owner can remove team members.");
+    }
+
+    if (normalizeStatus(application.status) !== "accepted") {
+      throw new Error("Only accepted members can be removed.");
+    }
+
+    const projectRef = doc(db, "projects", application.projectId);
+    const projectSnapshot = await transaction.get(projectRef);
+
+    if (!projectSnapshot.exists()) {
+      throw new Error("This project no longer exists.");
+    }
+
+    const project = projectSnapshot.data();
+    if (project.ownerId !== ownerId) {
+      throw new Error("Only the project owner can remove team members.");
+    }
+
+    const chatId = application.chatId || getProjectChatId(application.projectId, application.applicantId);
+    const chatRef = doc(db, "chats", chatId);
+    const chatSnapshot = await transaction.get(chatRef);
+
+    transaction.update(applicationRef, {
+      status: "Removed",
+      updatedAt: serverTimestamp(),
+    });
+
+    if (chatSnapshot.exists()) {
+      transaction.update(chatRef, {
+        members: [ownerId],
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    transaction.set(
+      doc(collection(db, "notifications")),
+      notificationPayload({
+        userId: application.applicantId,
+        type: "member-removed",
+        title: "Removed from project",
+        message: `You were removed from ${project.title || application.projectTitle || "a project"}.`,
+        link: `/projects/${application.projectId}`,
+      })
+    );
+  });
+}
+
+export async function leaveProject({ projectId, applicantId }) {
+  requireFirestore();
+
+  if (!projectId || !applicantId) {
+    throw new Error("Only accepted members can leave a project.");
+  }
+
+  const applicationId = `${projectId}_${applicantId}`;
+  const applicationRef = doc(db, "applications", applicationId);
+
+  await runTransaction(db, async (transaction) => {
+    const applicationSnapshot = await transaction.get(applicationRef);
+
+    if (!applicationSnapshot.exists()) {
+      throw new Error("This application no longer exists.");
+    }
+
+    const application = applicationSnapshot.data();
+
+    if (application.applicantId !== applicantId || application.projectId !== projectId) {
+      throw new Error("Only accepted members can leave a project.");
+    }
+
+    if (application.ownerId === applicantId) {
+      throw new Error("Project owners cannot leave their own project.");
+    }
+
+    if (normalizeStatus(application.status) !== "accepted") {
+      throw new Error("Only accepted members can leave a project.");
+    }
+
+    const projectRef = doc(db, "projects", projectId);
+    const projectSnapshot = await transaction.get(projectRef);
+
+    if (!projectSnapshot.exists()) {
+      throw new Error("This project no longer exists.");
+    }
+
+    const project = projectSnapshot.data();
+    const chatId = application.chatId || getProjectChatId(projectId, applicantId);
+    const chatRef = doc(db, "chats", chatId);
+    const chatSnapshot = await transaction.get(chatRef);
+
+    transaction.update(applicationRef, {
+      status: "Left",
+      updatedAt: serverTimestamp(),
+    });
+
+    if (chatSnapshot.exists()) {
+      transaction.update(chatRef, {
+        members: [application.ownerId],
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    transaction.set(
+      doc(collection(db, "notifications")),
+      notificationPayload({
+        userId: application.ownerId,
+        type: "member-left",
+        title: "Member left your project",
+        message: `${application.applicantName || "A builder"} left ${project.title || application.projectTitle || "your project"}.`,
+        link: `/projects/${projectId}`,
+      })
+    );
   });
 }
 

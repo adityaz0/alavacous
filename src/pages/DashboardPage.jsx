@@ -140,7 +140,9 @@ export default function DashboardPage() {
               <Avatar name={profile?.fullName || user.displayName} email={user.email} size="lg" />
               <div className="min-w-0">
                 <h2 className="break-words text-lg font-semibold text-white">{profile?.fullName || user.displayName || "Complete your profile"}</h2>
-                <p className="truncate text-sm text-white/48">@{profile?.username || "username"} / {profile?.experienceLevel || "Experience level"}</p>
+                <p className="truncate text-sm text-white/48">
+                  @{profile?.username || "username"} / {profile?.roleTitle || profile?.experienceLevel || "Role"}
+                </p>
               </div>
             </div>
             <Button as="link" to="/profile" variant="secondary" className="w-full sm:w-auto">
