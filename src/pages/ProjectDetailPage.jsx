@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, Edit3, ExternalLink, Layers, LockKeyhole, RotateCcw, Send, Trash2, UserCheck, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle2, Edit3, ExternalLink, Layers, LockKeyhole, RotateCcw, Send, Trash2, UserCheck, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ApplicationList from "../components/applications/ApplicationList.jsx";
@@ -22,6 +22,7 @@ import {
   listApplicationsByProject,
   reopenProject,
   updateApplicationStatus,
+  withdrawApplication,
 } from "../services/firestore.js";
 import { formatDate } from "../utils/format.js";
 import { getServiceErrorMessage } from "../utils/messages.js";
@@ -34,6 +35,10 @@ function logProjectDetailPermissionFailure(source, error) {
 
 function isPermissionDenied(error) {
   return error?.code === "permission-denied";
+}
+
+function normalizeStatus(status) {
+  return String(status || "").trim().toLowerCase();
 }
 
 export default function ProjectDetailPage() {
@@ -49,6 +54,8 @@ export default function ProjectDetailPage() {
   const [reopening, setReopening] = useState(false);
   const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [reopenModalOpen, setReopenModalOpen] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -57,8 +64,11 @@ export default function ProjectDetailPage() {
   const toast = useToast();
 
   const isOwner = useMemo(() => user && project?.ownerId === user.uid, [project, user]);
+  const myApplicationStatus = normalizeStatus(myApplication?.status);
+  const canWithdrawApplication = myApplicationStatus === "pending";
+  const hasAcceptedApplication = myApplicationStatus === "accepted";
   const canApply = project?.status === "Open" && isAuthenticated && !isOwner && !myApplication;
-  const canViewTeamWorkspace = isOwner || myApplication?.status === "Accepted";
+  const canViewTeamWorkspace = isOwner || hasAcceptedApplication;
 
   useEffect(() => {
     if (authLoading) return undefined;
@@ -103,7 +113,7 @@ export default function ProjectDetailPage() {
             setMyApplication(null);
           }
 
-          const canViewTeamWorkspace = isProjectOwner || existingApplication?.status === "Accepted";
+          const canViewTeamWorkspace = isProjectOwner || normalizeStatus(existingApplication?.status) === "accepted";
 
           if (canViewTeamWorkspace) {
             try {
@@ -191,6 +201,40 @@ export default function ProjectDetailPage() {
       )
     );
     return result;
+  }
+
+  async function handleWithdrawApplication() {
+    if (!user || !project || !myApplication) return;
+
+    if (hasAcceptedApplication) {
+      toast.info("You are already part of this project.");
+      return;
+    }
+
+    if (!canWithdrawApplication) {
+      toast.info("Only pending applications can be withdrawn.");
+      return;
+    }
+
+    setWithdrawing(true);
+    setSubmitError("");
+
+    try {
+      await withdrawApplication({ projectId: project.id, applicantId: user.uid });
+      setMyApplication(null);
+      setProject((current) =>
+        current ? { ...current, applicantCount: Math.max(0, (current.applicantCount || 0) - 1) } : current
+      );
+      setWithdrawModalOpen(false);
+      toast.success("Application withdrawn.");
+    } catch (err) {
+      console.error("Withdraw application failed:", err);
+      const message = getServiceErrorMessage(err, "Could not withdraw application.");
+      setSubmitError(message);
+      toast.error(message);
+    } finally {
+      setWithdrawing(false);
+    }
   }
 
   async function handleCloseProject() {
@@ -383,12 +427,42 @@ export default function ProjectDetailPage() {
               </div>
             ) : myApplication ? (
               <div className="mt-4 rounded-lg border border-line bg-white/[0.045] p-4">
-                <p className="text-sm font-semibold text-white">Your application status</p>
-                <div className="mt-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm font-semibold text-white">Your application status</p>
+                  {canWithdrawApplication ? (
+                    <span className="inline-flex w-fit items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-3 py-1 text-xs font-semibold text-mint">
+                      <CheckCircle2 size={14} />
+                      Applied
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
                   <StatusBadge status={myApplication.status} />
                 </div>
+                <div className="mt-3 text-xs text-cyan-300">DEBUG WITHDRAW RENDER PATH</div>
+                {normalizeStatus(myApplication?.status) === "pending" ? (
+                  <Button
+                    variant="secondary"
+                    disabled={withdrawing}
+                    onClick={() => setWithdrawModalOpen(true)}
+                    className="mt-4 w-full border-red-300/20 bg-red-500/10 text-red-100 hover:border-red-300/35 hover:bg-red-500/15"
+                  >
+                    <Trash2 size={16} />
+                    {withdrawing ? "Withdrawing..." : "Withdraw Application"}
+                  </Button>
+                ) : null}
                 {myApplication.message ? (
                   <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-6 text-white/48">{myApplication.message}</p>
+                ) : null}
+                {hasAcceptedApplication ? (
+                  <p className="mt-4 rounded-lg border border-mint/20 bg-mint/10 px-3 py-2 text-sm leading-6 text-mint">
+                    You are already part of this project.
+                  </p>
+                ) : null}
+                {submitError ? (
+                  <div className="mt-4">
+                    <Alert variant="error">{submitError}</Alert>
+                  </div>
                 ) : null}
               </div>
             ) : project.status !== "Open" ? (
@@ -463,6 +537,18 @@ export default function ProjectDetailPage() {
         submitting={reopening}
         onCancel={() => setReopenModalOpen(false)}
         onConfirm={handleReopenProject}
+      />
+
+      <ConfirmModal
+        open={!isOwner && normalizeStatus(myApplication?.status) === "pending" && withdrawModalOpen}
+        title="Withdraw your application?"
+        description="This removes your application from the owner's applicant list. You can apply again later while the project is open."
+        confirmLabel="Withdraw"
+        submittingLabel="Withdrawing..."
+        variant="warning"
+        submitting={withdrawing}
+        onCancel={() => setWithdrawModalOpen(false)}
+        onConfirm={handleWithdrawApplication}
       />
 
       <ConfirmModal

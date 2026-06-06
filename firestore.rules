@@ -10,6 +10,14 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == ownerId;
     }
 
+    function projectPath(projectId) {
+      return /databases/$(database)/documents/projects/$(projectId);
+    }
+
+    function applicationPath(projectId, userId) {
+      return /databases/$(database)/documents/applications/$(projectId + '_' + userId);
+    }
+
     function onlyApplicantCountIncremented(projectId) {
       return signedIn()
         && request.resource.data.diff(resource.data).changedKeys().hasOnly([
@@ -17,8 +25,28 @@ service cloud.firestore {
           'updatedAt'
         ])
         && request.resource.data.applicantCount == resource.data.applicantCount + 1
-        && !exists(/databases/$(database)/documents/applications/$(projectId + '_' + request.auth.uid))
-        && existsAfter(/databases/$(database)/documents/applications/$(projectId + '_' + request.auth.uid));
+        && !exists(applicationPath(projectId, request.auth.uid))
+        && existsAfter(applicationPath(projectId, request.auth.uid));
+    }
+
+    function onlyApplicantCountWithdrawn(projectId) {
+      return signedIn()
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'applicantCount',
+          'updatedAt'
+        ])
+        && exists(applicationPath(projectId, request.auth.uid))
+        && !existsAfter(applicationPath(projectId, request.auth.uid))
+        && (
+          (
+            resource.data.applicantCount > 0
+            && request.resource.data.applicantCount == resource.data.applicantCount - 1
+          )
+          || (
+            resource.data.applicantCount == 0
+            && request.resource.data.applicantCount == 0
+          )
+        );
     }
 
     function ownerProjectFieldsAreStable() {
@@ -28,11 +56,26 @@ service cloud.firestore {
     }
 
     function projectData(projectId) {
-      return get(/databases/$(database)/documents/projects/$(projectId)).data;
+      return get(projectPath(projectId)).data;
+    }
+
+    function withdrawalKeepsApplicantCountSafe(projectId) {
+      return exists(projectPath(projectId))
+        && existsAfter(projectPath(projectId))
+        && (
+          (
+            projectData(projectId).applicantCount > 0
+            && getAfter(projectPath(projectId)).data.applicantCount == projectData(projectId).applicantCount - 1
+          )
+          || (
+            projectData(projectId).applicantCount == 0
+            && getAfter(projectPath(projectId)).data.applicantCount == 0
+          )
+        );
     }
 
     function acceptedApplicationPath(projectId, userId) {
-      return /databases/$(database)/documents/applications/$(projectId + '_' + userId);
+      return applicationPath(projectId, userId);
     }
 
     function isAcceptedProjectMember(projectId) {
@@ -67,7 +110,8 @@ service cloud.firestore {
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.applicantCount == 0;
       allow update: if (isOwner(resource.data.ownerId) && ownerProjectFieldsAreStable())
-        || onlyApplicantCountIncremented(projectId);
+        || onlyApplicantCountIncremented(projectId)
+        || onlyApplicantCountWithdrawn(projectId);
       allow delete: if isOwner(resource.data.ownerId);
     }
 
@@ -108,7 +152,15 @@ service cloud.firestore {
           )
         );
       allow delete: if signedIn()
-        && resource.data.ownerId == request.auth.uid;
+        && (
+          resource.data.ownerId == request.auth.uid
+          || (
+            applicationId == resource.data.projectId + '_' + request.auth.uid
+            && resource.data.applicantId == request.auth.uid
+            && resource.data.status in ['Pending', 'pending']
+            && withdrawalKeepsApplicantCountSafe(resource.data.projectId)
+          )
+        );
     }
 
     match /chats/{chatId} {

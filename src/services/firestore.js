@@ -321,6 +321,57 @@ export async function createApplication(data) {
   return applicationId;
 }
 
+export async function withdrawApplication({ projectId, applicantId }) {
+  requireFirestore();
+
+  if (!projectId || !applicantId) {
+    throw new Error("Only the applicant can withdraw this application.");
+  }
+
+  const applicationId = `${projectId}_${applicantId}`;
+  const applicationRef = doc(db, "applications", applicationId);
+
+  await runTransaction(db, async (transaction) => {
+    const applicationSnapshot = await transaction.get(applicationRef);
+
+    if (!applicationSnapshot.exists()) {
+      throw new Error("This application no longer exists.");
+    }
+
+    const application = applicationSnapshot.data();
+
+    if (application.applicantId !== applicantId || application.projectId !== projectId) {
+      throw new Error("Only the applicant can withdraw this application.");
+    }
+
+    const applicationStatus = String(application.status || "").trim().toLowerCase();
+
+    if (applicationStatus === "accepted") {
+      throw new Error("You are already part of this project.");
+    }
+
+    if (applicationStatus !== "pending") {
+      throw new Error("Only pending applications can be withdrawn.");
+    }
+
+    const projectRef = doc(db, "projects", projectId);
+    const projectSnapshot = await transaction.get(projectRef);
+
+    if (!projectSnapshot.exists()) {
+      throw new Error("This project no longer exists.");
+    }
+
+    const project = projectSnapshot.data();
+    const currentApplicantCount = Math.max(0, Number(project.applicantCount) || 0);
+
+    transaction.delete(applicationRef);
+    transaction.update(projectRef, {
+      applicantCount: Math.max(0, currentApplicantCount - 1),
+      updatedAt: serverTimestamp(),
+    });
+  });
+}
+
 export async function getApplicationForProject(projectId, applicantId) {
   if (!projectId || !applicantId || !firebaseConfigured) return null;
   const snapshot = await getDocs(
